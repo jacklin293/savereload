@@ -71,14 +71,17 @@ func GetAction(e *fsnotify.FileEvent) string {
 }
 
 func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
-    var prevActionSec int
+    var prevActionTime int
     for {
         select {
         case ev := <-watcher.Event:
             // Prevent the same action output many times.
-            if prevActionSec - time.Now().Second() == 0 {
+
+            if prevActionTime-time.Now().Second() == 0 {
                 continue
             }
+            prevActionTime = time.Now().Second()
+            fmt.Println(prevActionTime-time.Now().Second())
             // Ignore some file extension
             if CheckIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
                 continue
@@ -91,7 +94,6 @@ func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
             log.Println("error:", err)
             os.Exit(0)
         }
-        prevActionSec = time.Now().Second()
     }
 }
 
