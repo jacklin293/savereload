@@ -10,6 +10,7 @@ import(
     "os/exec"
     "path/filepath"
     "time"
+    "errors"
 )
 
 type Args struct {
@@ -37,16 +38,14 @@ func DirExists(path string) (bool, error) {
 func RunCommand(cmd string) {
     splitCmd := strings.Split(cmd, " ")
     if strings.TrimSpace(splitCmd[0]) == "" {
-        fmt.Printf("Command (%v) has too few args\n", cmd)
-        os.Exit(0)
+        log.Fatal(errors.New(fmt.Sprintf("Command (%v) has too few args\n", cmd)))
     }
     cmdPtr := exec.Command(splitCmd[0], splitCmd[1:]...)
     cmdPtr.Stdout = os.Stdout
     cmdPtr.Stderr = os.Stderr
     err := cmdPtr.Run()
     if err != nil {
-        fmt.Printf("Command failed! %s\n", err.Error())
-        os.Exit(0)
+        log.Fatal(err)
     }
 }
 
@@ -80,19 +79,17 @@ func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
             if prevActionTime-time.Now().Second() == 0 {
                 continue
             }
-            prevActionTime = time.Now().Second()
-            fmt.Println(prevActionTime-time.Now().Second())
             // Ignore some file extension
             if CheckIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
                 continue
             }
+            prevActionTime = time.Now().Second()
             log.Println("event:", ev)
             if args.Cmd != "" {
                 RunCommand(args.Cmd)
             }
         case err := <-watcher.Error:
-            log.Println("error:", err)
-            os.Exit(0)
+            log.Fatal(err)
         }
     }
 }
@@ -100,12 +97,12 @@ func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
 func main() {
     args := Args{}
 
-	flag.StringVar(&args.Path, "p", "", "The file or folder path to watch")
-	flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
-	flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-	flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
+    flag.StringVar(&args.Path, "p", "", "The file or folder path to watch")
+    flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
+    flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
+    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
 
-	flag.Parse()
+    flag.Parse()
 
     // Check path
     isDir, err := DirExists(args.Path)
@@ -119,10 +116,14 @@ func main() {
         fmt.Println("File")
     }
 
+    // Clean Path
+    args.Path = filepath.Clean(args.Path)
+
+
+    // Watch start
     watcher, err := fsnotify.NewWatcher()
     if err != nil {
-        fmt.Println(err.Error())
-        os.Exit(0)
+        log.Fatal(err)
     }
 
     done := make(chan bool)
@@ -130,8 +131,8 @@ func main() {
 
     err = watcher.Watch(args.Path)
     if err != nil {
-        fmt.Println(err.Error())
-        os.Exit(0)
+        log.Fatal(err)
     }
     <-done
+    watcher.Close()
 }
