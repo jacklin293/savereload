@@ -152,33 +152,18 @@ func Watcher(ws *websocket.Conn) {
     var err error
     var rec string
 
-    //for {
-    //    err = websocket.JSON.Receive(ws, &rec)
-    //    if err != nil {
-    //        websocket.JSON.Send(ws,  "fail")
-    //        break
-    //    }
-    //    rec = "Server receives : " + rec
-
-    //    if err = websocket.JSON.Send(ws, rec); err != nil {
-    //        fmt.Println("Can't send")
-    //        break
-    //    }
-    //}
     for {
-        if err = websocket.Message.Receive(ws, &rec); err != nil {
-                fmt.Println( "Can't receive" )
-                break
-            }
+        err = websocket.JSON.Receive(ws, &rec)
+        if err != nil {
+            break
+        }
+        rec = "Server receives : " + rec
+        fmt.Println(rec)
 
-            fmt.Println( "Received back from client: " + rec)
-
-            msg := "Received: " + rec
-            fmt.Println( "Sending to client: " + msg)
-
-            if err = websocket.Message.Send(ws, msg); err != nil {
-                fmt.Println( "Can't send" )
-                break
-            }
+        rec = "Server send : " + rec
+        if err = websocket.JSON.Send(ws, rec); err != nil {
+            fmt.Println("Can't send")
+            break
+        }
     }
 }
