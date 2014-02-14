@@ -1,6 +1,7 @@
 package main
 
 import(
+    "code.google.com/p/go.net/websocket"
     "github.com/howeyc/fsnotify"
     "log"
     "flag"
@@ -11,6 +12,7 @@ import(
     "path/filepath"
     "time"
     "errors"
+    "net/http"
 )
 
 type Args struct {
@@ -104,6 +106,14 @@ func main() {
 
     flag.Parse()
 
+    // Listen websocket
+    // 54.250.138.78
+    http.Handle("/watcher/", websocket.Handler(Watcher))
+    err := http.ListenAndServe(":9090", nil)
+    if err != nil {
+        log.Fatal("ListenAndServe: ", err)
+    }
+
     // Check path
     isDir, err := DirExists(args.Path)
     if err != nil {
@@ -135,4 +145,40 @@ func main() {
     }
     <-done
     watcher.Close()
+}
+
+func Watcher(ws *websocket.Conn) {
+
+    var err error
+    var rec string
+
+    //for {
+    //    err = websocket.JSON.Receive(ws, &rec)
+    //    if err != nil {
+    //        websocket.JSON.Send(ws,  "fail")
+    //        break
+    //    }
+    //    rec = "Server receives : " + rec
+
+    //    if err = websocket.JSON.Send(ws, rec); err != nil {
+    //        fmt.Println("Can't send")
+    //        break
+    //    }
+    //}
+    for {
+        if err = websocket.Message.Receive(ws, &rec); err != nil {
+                fmt.Println( "Can't receive" )
+                break
+            }
+
+            fmt.Println( "Received back from client: " + rec)
+
+            msg := "Received: " + rec
+            fmt.Println( "Sending to client: " + msg)
+
+            if err = websocket.Message.Send(ws, msg); err != nil {
+                fmt.Println( "Can't send" )
+                break
+            }
+    }
 }
