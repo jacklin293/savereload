@@ -13,6 +13,7 @@ import(
     "time"
     "errors"
     "net/http"
+    "html/template"
 )
 
 type Args struct {
@@ -109,7 +110,7 @@ func main() {
     // Listen websocket
     // 54.250.138.78
     http.HandleFunc("/", Home)
-    http.Handle("/wat/", websocket.Handler(Wat))
+    http.Handle("/connws/", websocket.Handler(ConnWs))
     err := http.ListenAndServe(":9090", nil)
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
@@ -148,9 +149,13 @@ func main() {
     watcher.Close()
 }
 
-func Wat(ws *websocket.Conn) {
+type WsRec struct {
+    Enabled string
+}
+
+func ConnWs(ws *websocket.Conn) {
     var err error
-    var rec string
+    rec := WsRec{}
 
     for {
         err = websocket.JSON.Receive(ws, &rec)
@@ -158,18 +163,55 @@ func Wat(ws *websocket.Conn) {
             fmt.Println(err.Error())
             break
         }
-        rec = "Server receives : " + rec
-        fmt.Println(rec)
+        fmt.Printf("Server received : %v\n", rec)
+        if rec.Enabled == "false" {
+            ws.Close()
+        }
 
-        rec = "Server send : " + rec
         if err = websocket.JSON.Send(ws, rec); err != nil {
-            fmt.Println("Can't send")
+            fmt.Println("Fail to send message.")
             break
         }
     }
 }
 
 func Home(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("hello~")
-    fmt.Fprintf(w, "hello")
+    t := template.Must(template.New("connWebsocket").Parse(tmpl))
+    v := map[string]interface{}{
+        "host" : "54.250.138.78:9090",
+    }
+    t.Execute(w, v)
 }
+
+
+const tmpl = `
+<html>
+<head>
+    <title>Test~</title>
+</head>
+<body>
+</body>
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+    ws = new WebSocket("ws://{{.host}}/connws/");
+    ws.onopen = function() {
+        console.log("[onopen] connect ws uri.");
+        var data = {
+            "Enabled" : "true"
+        };
+        ws.send(JSON.stringify(data));
+    }
+    ws.onmessage = function(e) {
+        var res = JSON.parse(e.data);
+        console.log("Client received : " + res.Enabled);
+    }
+    ws.onclose = function(e) {
+        console.log("[onclose] connection closed (" + e.code + ")");
+        delete ws;
+    }
+    ws.onerror = function (e) {
+        console.log("[onerror] error!");
+    }
+</script>
+</html>
+`
