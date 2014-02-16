@@ -108,7 +108,8 @@ func main() {
 
     // Listen websocket
     // 54.250.138.78
-    http.Handle("/watcher/", websocket.Handler(Watcher))
+    http.HandleFunc("/", Home)
+    http.Handle("/wat/", websocket.Handler(Wat))
     err := http.ListenAndServe(":9090", nil)
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
@@ -147,14 +148,14 @@ func main() {
     watcher.Close()
 }
 
-func Watcher(ws *websocket.Conn) {
-
+func Wat(ws *websocket.Conn) {
     var err error
     var rec string
 
     for {
         err = websocket.JSON.Receive(ws, &rec)
         if err != nil {
+            fmt.Println(err.Error())
             break
         }
         rec = "Server receives : " + rec
@@ -166,4 +167,9 @@ func Watcher(ws *websocket.Conn) {
             break
         }
     }
+}
+
+func Home(w http.ResponseWriter, r *http.Request) {
+    fmt.Println("hello~")
+    fmt.Fprintf(w, "hello")
 }
