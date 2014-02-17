@@ -1,7 +1,7 @@
 package main
 
 import(
-    "code.google.com/p/go.net/websocket"
+    "github.com/gorilla/websocket"
     "github.com/howeyc/fsnotify"
     "log"
     "flag"
@@ -110,7 +110,7 @@ func main() {
     // Listen websocket
     // 54.250.138.78
     http.HandleFunc("/", Home)
-    http.Handle("/connws/", websocket.Handler(ConnWs))
+    http.HandleFunc("/connws/", ConnWs)
     err := http.ListenAndServe(":9090", nil)
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
@@ -149,30 +149,33 @@ func main() {
     watcher.Close()
 }
 
-type WsRec struct {
-    Enabled string
-}
+func ConnWs(w http.ResponseWriter, r *http.Request) {
+    ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)
+    if _, ok := err.(websocket.HandshakeError); ok {
+        http.Error(w, "Not a websocket handshake", 400)
+        return
+    } else if err != nil {
+        log.Println(err)
+        return
+    }
 
-func ConnWs(ws *websocket.Conn) {
-    var err error
-    rec := WsRec{}
-
+    rec := map[string] interface{}{}
     for {
-        err = websocket.JSON.Receive(ws, &rec)
-        if err != nil {
-            fmt.Println(err.Error())
-            break
-        }
-        fmt.Printf("Server received : %v\n", rec)
-        if rec.Enabled == "false" {
+        if err = ws.ReadJSON(&rec); err != nil {
+            if err.Error() == "EOF" {
+                return
+            }
+            fmt.Println("Read : " + err.Error())
             ws.Close()
         }
-
-        if err = websocket.JSON.Send(ws, rec); err != nil {
-            fmt.Println("Fail to send message.")
-            break
+        rec["Test"] = "tt"
+        fmt.Println(rec)
+        if err = ws.WriteJSON(&rec); err != nil {
+            fmt.Println("Write : " + err.Error())
+            ws.Close()
         }
     }
+
 }
 
 func Home(w http.ResponseWriter, r *http.Request) {
@@ -185,13 +188,12 @@ func Home(w http.ResponseWriter, r *http.Request) {
 
 
 const tmpl = `
-<html>
+<!DOCTYPE html>
 <head>
     <title>Test~</title>
 </head>
 <body>
 </body>
-<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
     ws = new WebSocket("ws://{{.host}}/connws/");
     ws.onopen = function() {
@@ -203,7 +205,7 @@ const tmpl = `
     }
     ws.onmessage = function(e) {
         var res = JSON.parse(e.data);
-        console.log("Client received : " + res.Enabled);
+        console.log(res);
     }
     ws.onclose = function(e) {
         console.log("[onclose] connection closed (" + e.code + ")");
