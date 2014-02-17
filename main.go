@@ -165,14 +165,18 @@ func ConnWs(w http.ResponseWriter, r *http.Request) {
             if err.Error() == "EOF" {
                 return
             }
+            // ErrShortWrite means that a write accepted fewer bytes than requested but failed to return an explicit error.
+            if err.Error() == "unexpected EOF" {
+                return
+            }
             fmt.Println("Read : " + err.Error())
-            ws.Close()
+            return
         }
         rec["Test"] = "tt"
         fmt.Println(rec)
         if err = ws.WriteJSON(&rec); err != nil {
             fmt.Println("Write : " + err.Error())
-            ws.Close()
+            return
         }
     }
 
