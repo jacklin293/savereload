@@ -13,7 +13,6 @@ import(
     "time"
     "errors"
     "net/http"
-    "html/template"
 )
 
 type Args struct {
@@ -67,7 +66,6 @@ func GetAction(e *fsnotify.FileEvent) string {
     if e.IsDelete() { events += "|" + "DELETE" }
     if e.IsModify() { events += "|" + "MODIFY" }
     if e.IsRename() { events += "|" + "RENAME" }
-    if e.IsAttrib() { events += "|" + "ATTRIB" }
     if len(events) > 0 { events = events[1:] }
     return events
 }
@@ -109,7 +107,6 @@ func main() {
 
     // Listen websocket
     // 54.250.138.78
-    http.HandleFunc("/", Home)
     http.HandleFunc("/connws/", ConnWs)
     err := http.ListenAndServe(":9090", nil)
     if err != nil {
@@ -181,43 +178,3 @@ func ConnWs(w http.ResponseWriter, r *http.Request) {
     }
 
 }
-
-func Home(w http.ResponseWriter, r *http.Request) {
-    t := template.Must(template.New("connWebsocket").Parse(tmpl))
-    v := map[string]interface{}{
-        "host" : "54.250.138.78:9090",
-    }
-    t.Execute(w, v)
-}
-
-
-const tmpl = `
-<!DOCTYPE html>
-<head>
-    <title>Test~</title>
-</head>
-<body>
-</body>
-<script type="text/javascript">
-    ws = new WebSocket("ws://{{.host}}/connws/");
-    ws.onopen = function() {
-        console.log("[onopen] connect ws uri.");
-        var data = {
-            "Enabled" : "true"
-        };
-        ws.send(JSON.stringify(data));
-    }
-    ws.onmessage = function(e) {
-        var res = JSON.parse(e.data);
-        console.log(res);
-    }
-    ws.onclose = function(e) {
-        console.log("[onclose] connection closed (" + e.code + ")");
-        delete ws;
-    }
-    ws.onerror = function (e) {
-        console.log("[onerror] error!");
-    }
-</script>
-</html>
-`
