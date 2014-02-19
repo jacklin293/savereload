@@ -1,25 +1,25 @@
 package main
 
-import(
+import (
+    "errors"
+    "flag"
+    "fmt"
     "github.com/gorilla/websocket"
     "github.com/howeyc/fsnotify"
     "log"
-    "flag"
-    "strings"
-    "fmt"
+    "net/http"
     "os"
     "os/exec"
     "path/filepath"
+    "strings"
     "time"
-    "errors"
-    "net/http"
 )
 
 type Args struct {
-    Path string
-    IsDir bool
-    Cmd string
-    Recurse bool
+    Path      string
+    IsDir     bool
+    Cmd       string
+    Recurse   bool
     IgnoreExt string
 }
 
@@ -53,7 +53,7 @@ func RunCommand(cmd string) {
 
 func CheckIgnoreExt(fileExt string, ignoreExts []string) bool {
     for _, ignoreExt := range ignoreExts {
-        if fileExt == "." + ignoreExt {
+        if fileExt == "."+ignoreExt {
             return true
         }
     }
@@ -62,11 +62,21 @@ func CheckIgnoreExt(fileExt string, ignoreExts []string) bool {
 
 func GetAction(e *fsnotify.FileEvent) string {
     var events string = ""
-    if e.IsCreate() { events += "|" + "CREATE" }
-    if e.IsDelete() { events += "|" + "DELETE" }
-    if e.IsModify() { events += "|" + "MODIFY" }
-    if e.IsRename() { events += "|" + "RENAME" }
-    if len(events) > 0 { events = events[1:] }
+    if e.IsCreate() {
+        events += "|" + "CREATE"
+    }
+    if e.IsDelete() {
+        events += "|" + "DELETE"
+    }
+    if e.IsModify() {
+        events += "|" + "MODIFY"
+    }
+    if e.IsRename() {
+        events += "|" + "RENAME"
+    }
+    if len(events) > 0 {
+        events = events[1:]
+    }
     return events
 }
 
@@ -128,7 +138,6 @@ func main() {
     // Clean Path
     args.Path = filepath.Clean(args.Path)
 
-
     // Watch start
     watcher, err := fsnotify.NewWatcher()
     if err != nil {
@@ -156,7 +165,7 @@ func ConnWs(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    rec := map[string] interface{}{}
+    rec := map[string]interface{}{}
     for {
         if err = ws.ReadJSON(&rec); err != nil {
             if err.Error() == "EOF" {
@@ -169,12 +178,10 @@ func ConnWs(w http.ResponseWriter, r *http.Request) {
             fmt.Println("Read : " + err.Error())
             return
         }
-        rec["Test"] = "tt"
         fmt.Println(rec)
         if err = ws.WriteJSON(&rec); err != nil {
             fmt.Println("Write : " + err.Error())
             return
         }
     }
-
 }
