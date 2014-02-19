@@ -1,7 +1,7 @@
-/*
-chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
-  console.log(response.farewell);
-});*/
-$(document).ready(function(){
-    $(body).html("xxxxx");    
-})
+function pageReload(){
+    location.reload();
+}
+chrome.runtime.onMessage.addListener(function(msg, _, sendResponse) {
+    console.log(msg);
+    pageReload();
+});

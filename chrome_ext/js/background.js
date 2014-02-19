@@ -7,7 +7,9 @@ ws.onopen = function() {
 }
 ws.onmessage = function(e) {
     var res = JSON.parse(e.data);
-    console.log(res);
+    if (res["Enabled"] == "true") {
+      pageReload();
+    }
 }
 ws.onclose = function(e) {
     console.log("[onclose] connection closed (" + e.code + ")");
@@ -25,7 +27,7 @@ function wsConnect() {
     wsEnabled = true;
 }
 
-function wsDisconnect(){
+function wsDisconnect() {
     var data = {
         "Enabled" : "false"
     };
@@ -33,12 +35,18 @@ function wsDisconnect(){
     wsEnabled = false;
 }
 
+function pageReload() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      lastTabId = tabs[0].id;
+      chrome.tabs.sendMessage(lastTabId, "Tab " + lastTabId + " do reload.");
+    });
+}
+
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    /*
     console.log(sender.tab ?
               "from a content script:" + sender.tab.url :
-              "from the extension");*/
+              "from the extension");
     if (request.wsAction == "getStatus") {
        sendResponse({"wsEnabled": wsEnabled});
     }
