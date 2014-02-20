@@ -1,7 +1,7 @@
 console.log("=== background starting ===");
 
 var currentTabID;
-var ws = new WebSocket("ws://127.0.0.1:9090/connws/");
+var ws = new WebSocket("ws://54.250.138.78:9090/connws/");
 var wsEnabled = false;
 ws.onopen = function() {
     console.log("[onopen] connect ws uri.");
