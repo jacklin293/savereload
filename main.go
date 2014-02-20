@@ -83,6 +83,7 @@ func GetAction(e *fsnotify.FileEvent) string {
 
 func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
     var prevActionTime int
+    msg := map[string]interface{}{}
     for {
         select {
         case ev := <-watcher.Event:
@@ -97,9 +98,7 @@ func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
             }
             prevActionTime = time.Now().Second()
             log.Println("event:", ev)
-            msg := map[string]interface{}{
-                "Enabled": "true",
-            }
+            msg["Action"] = "doReload"
             if err := args.Ws.WriteJSON(&msg); err != nil {
                 fmt.Println("watch dir - Write : " + err.Error())
                 return
@@ -194,9 +193,10 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
             fmt.Println("Read : " + err.Error())
             return
         }
+        rec["ServerResponse"] = "Server received."
         fmt.Println(rec)
         if err = ws.WriteJSON(&rec); err != nil {
-            fmt.Println("Write : " + err.Error())
+            fmt.Println("watch dir - Write : " + err.Error())
             return
         }
     }
