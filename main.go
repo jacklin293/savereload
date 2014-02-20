@@ -97,10 +97,10 @@ func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
             }
             prevActionTime = time.Now().Second()
             log.Println("event:", ev)
-            rec := map[string]interface{}{
-                "Enabled": true,
+            msg := map[string]interface{}{
+                "Enabled": "true",
             }
-            if err := args.Ws.WriteJSON(&rec); err != nil {
+            if err := args.Ws.WriteJSON(&msg); err != nil {
                 fmt.Println("watch dir - Write : " + err.Error())
                 return
             }
@@ -178,7 +178,7 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
     }
 
     args.Ws = ws
-    args.ExecWatchFlow()
+    go args.ExecWatchFlow()
 
     rec := map[string]interface{}{}
     for {
