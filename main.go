@@ -21,7 +21,7 @@ type Args struct {
     Cmd       string
     Recurse   bool
     IgnoreExt string
-    Ws        websocket.Conn
+    Ws        *websocket.Conn
 }
 
 func DirExists(path string) (bool, error) {
@@ -97,6 +97,14 @@ func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
             }
             prevActionTime = time.Now().Second()
             log.Println("event:", ev)
+            rec := map[string]interface{}{
+                "Enabled": true,
+            }
+            if err := args.Ws.WriteJSON(&rec); err != nil {
+                fmt.Println("watch dir - Write : " + err.Error())
+                return
+            }
+
             if args.Cmd != "" {
                 RunCommand(args.Cmd)
             }
@@ -150,18 +158,16 @@ func main() {
 
     flag.Parse()
 
-    args.ExecWatchFlow()
-
     // Listen websocket
     // 54.250.138.78
-    http.HandleFunc("/connws/", ConnWs)
+    http.HandleFunc("/connws/", args.ConnWs)
     err := http.ListenAndServe(":9090", nil)
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
     }
 }
 
-func ConnWs(w http.ResponseWriter, r *http.Request) {
+func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
     ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)
     if _, ok := err.(websocket.HandshakeError); ok {
         http.Error(w, "Not a websocket handshake", 400)
@@ -170,6 +176,9 @@ func ConnWs(w http.ResponseWriter, r *http.Request) {
         log.Println(err)
         return
     }
+
+    args.Ws = ws
+    args.ExecWatchFlow()
 
     rec := map[string]interface{}{}
     for {
