@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function clickHandler(e) {
     var enabled = document.getElementById('switch').checked;
     chrome.runtime.sendMessage({wsConn: enabled}, function(response) {
-        alert(response.connStatus);
+        //alert(response.connStatus);
     });
 
 }

@@ -11,7 +11,7 @@
         "default_title" : "Development Tool",
         "default_icon" : {
             "16" :      "img/16.png",
-            "19":       "img/19.png",
+            "19":       "img/browser_action_icon_disabled_19.png",
             "32" :      "img/32.png",
             "38":       "img/38.png",
             "48" :      "img/48.png",
