@@ -1,6 +1,6 @@
 console.log("=== background starting ===");
 
-var ws = new WebSocket("ws://54.250.138.78:9090/connws/");
+var ws = new WebSocket("ws://127.0.0.1:9090/connws/");
 var wsEnabled = false;
 ws.onopen = function() {
     console.log("[onopen] connect ws uri.");
@@ -38,7 +38,7 @@ function wsDisconnect() {
 function pageReload() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         lastTabID = tabs[0].id;
-		chrome.tabs.sendMessage(lastTabID, "Tab " + lastTabID + " do reload.");
+        chrome.tabs.sendMessage(lastTabID, "Tab " + lastTabID + " do reload.");
     });
 }
 
@@ -53,9 +53,15 @@ chrome.runtime.onMessage.addListener(
 
     if (request.wsConn == true) {
       wsConnect();
+      chrome.browserAction.setIcon({
+            path : "img/browser_action_icon_enabled_19.png"
+        });
       sendResponse({connStatus: "connect"});
     } else if (request.wsConn == false) {
       wsDisconnect();
+      chrome.browserAction.setIcon({
+            path : "img/browser_action_icon_disabled_19.png"
+        });
       sendResponse({connStatus: "disconnect"});
     }
 });

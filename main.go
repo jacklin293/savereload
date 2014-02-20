@@ -81,7 +81,7 @@ func GetAction(e *fsnotify.FileEvent) string {
     return events
 }
 
-func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
+func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
     var prevActionTime int
     for {
         select {
@@ -104,6 +104,7 @@ func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
                 fmt.Println("watch dir - Write : " + err.Error())
                 return
             }
+            fmt.Printf("Notify browser reload : %v\n", msg)
 
             if args.Cmd != "" {
                 RunCommand(args.Cmd)
@@ -137,7 +138,7 @@ func (args *Args) ExecWatchFlow() {
     }
 
     done := make(chan bool)
-    go args.watch_directory(watcher)
+    go args.watchDirectory(watcher)
 
     err = watcher.Watch(args.Path)
     if err != nil {
