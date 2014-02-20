@@ -1,5 +1,6 @@
 console.log("=== background starting ===");
 
+var currentTabID;
 var ws = new WebSocket("ws://54.250.138.78:9090/connws/");
 var wsEnabled = false;
 ws.onopen = function() {
@@ -8,7 +9,7 @@ ws.onopen = function() {
 ws.onmessage = function(e) {
     var res = JSON.parse(e.data);
     if (res["Enabled"] == "true") {
-      pageReload();
+      pageReload(currentTabID);
     }
 }
 ws.onclose = function(e) {
@@ -35,11 +36,14 @@ function wsDisconnect() {
     wsEnabled = false;
 }
 
-function pageReload() {
+function setCurrentTabID() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      lastTabId = tabs[0].id;
-      chrome.tabs.sendMessage(lastTabId, "Tab " + lastTabId + " do reload.");
+      currentTabID = tabs[0].id;
     });
+}
+
+function pageReload(currentTabID) {
+   chrome.tabs.sendMessage(currentTabID, "Tab " + currentTabID + " do reload.");
 }
 
 chrome.runtime.onMessage.addListener(
@@ -53,6 +57,7 @@ chrome.runtime.onMessage.addListener(
 
     if (request.wsConn == true) {
       wsConnect();
+      setCurrentTabID();
       sendResponse({connStatus: "connect"});
     } else if (request.wsConn == false) {
       wsDisconnect();
