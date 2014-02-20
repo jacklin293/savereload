@@ -1,43 +1,42 @@
 console.log("=== background starting ===");
 
 // Global variable
-var ws = new WebSocket("ws://54.250.138.78:9090/connws/");
+var ws;
 var wsEnabled = false;
 
-ws.onopen = function() {
-  console.log("[onopen] connect ws uri.");
-  var data = {
-    "Action" : "requireConnect"
-  };
-  ws.send(JSON.stringify(data));
-  wsEnabled = true;
-}
 
-ws.onmessage = function(e) {
-    var res = JSON.parse(e.data);
-    if (wsEnabled && res["Action"] == "doReload") {
-      pageReload();
-    }
-}
 
-ws.onclose = function(e) {
-    console.log("[onclose] connection closed (" + e.code + ")");
-    delete ws;
-    wsEnabled = false;
-}
-
-ws.onerror = function (e) {
-    console.log("[onerror] error!");
-    wsEnabled = false;
-}
-
-function wsConnect() {
+function wsConnect(url) {
     
-    if (ws.readyState == 1) {
-        wsEnabled = true;
-    } else {
+    ws = new WebSocket("ws://" + url + ":9090/connws/");
+
+    ws.onopen = function() {
+      console.log("[onopen] connect ws uri.");
+      var data = {
+        "Action" : "requireConnect"
+      };
+      ws.send(JSON.stringify(data));
+      wsEnabled = true;
+    }
+
+    ws.onmessage = function(e) {
+        var res = JSON.parse(e.data);
+        if (wsEnabled && res["Action"] == "doReload") {
+          pageReload();
+        }
+    }
+
+    ws.onclose = function(e) {
+        console.log("[onclose] connection closed (" + e.code + ")");
+        delete ws;
         wsEnabled = false;
     }
+
+    ws.onerror = function (e) {
+        console.log("[onerror] error!");
+        wsEnabled = false;
+    }
+
     /* 
     Check ws whether initial or not.
     ==================================
@@ -77,7 +76,7 @@ chrome.runtime.onMessage.addListener(
 
     if (request.wsAction == "checkboxEvent") {
         if (request.wsConn) {
-          wsConnect();
+          wsConnect(request.url);
         } else {
           wsDisconnect();
         }
