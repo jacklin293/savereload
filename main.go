@@ -21,6 +21,7 @@ type Args struct {
     Cmd       string
     Recurse   bool
     IgnoreExt string
+    Ws        websocket.Conn
 }
 
 func DirExists(path string) (bool, error) {
@@ -105,24 +106,7 @@ func (args *Args) watch_directory(watcher *fsnotify.Watcher) {
     }
 }
 
-func main() {
-    args := Args{}
-
-    flag.StringVar(&args.Path, "p", "", "The file or folder path to watch")
-    flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
-    flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
-
-    flag.Parse()
-
-    // Listen websocket
-    // 54.250.138.78
-    http.HandleFunc("/connws/", ConnWs)
-    err := http.ListenAndServe(":9090", nil)
-    if err != nil {
-        log.Fatal("ListenAndServe: ", err)
-    }
-
+func (args *Args) ExecWatchFlow() {
     // Check path
     isDir, err := DirExists(args.Path)
     if err != nil {
@@ -153,6 +137,28 @@ func main() {
     }
     <-done
     watcher.Close()
+
+}
+
+func main() {
+    args := Args{}
+
+    flag.StringVar(&args.Path, "p", "", "The file or folder path to watch")
+    flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
+    flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
+    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
+
+    flag.Parse()
+
+    args.ExecWatchFlow()
+
+    // Listen websocket
+    // 54.250.138.78
+    http.HandleFunc("/connws/", ConnWs)
+    err := http.ListenAndServe(":9090", nil)
+    if err != nil {
+        log.Fatal("ListenAndServe: ", err)
+    }
 }
 
 func ConnWs(w http.ResponseWriter, r *http.Request) {
