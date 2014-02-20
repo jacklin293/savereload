@@ -1,0 +1,19 @@
+body {
+    width: 160px;
+}
+
+#connStatusContainer{
+    display: none;
+}
+
+.success {
+    color: green;
+}
+
+.fail {
+    color: red;
+}
+
+#url {
+    width: 100px;
+}

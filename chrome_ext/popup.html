@@ -4,13 +4,19 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 -->
 <meta charset="utf-8">
-    
-  <script src="js/popup.js"></script>
+<link rel="stylesheet" type="text/css" href="popup.css">
+<script src="js/popup.js"></script>
 </head>
-<body style="width: 180px">
-  <div>
+<body>
+    <div>
         <input type="checkbox" value="1" id="switch"/>
-        <label for="switch">開啟websocket連線</label>
+        <label for="switch">啟動 Save Reload</label>
+    </div>
+    <div id="connStatusContainer">
+        <span>狀態 : </span><span id="connStatus"></span>
+    </div>
+    <div>
+        <span>URL : </span><input type="input" id="url" value="127.0.0.1" placeholder="ex: 127.0.0.1 Or example.com"/>
     </div>
 </body>
 </html>

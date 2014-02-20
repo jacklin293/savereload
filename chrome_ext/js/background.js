@@ -1,35 +1,60 @@
 console.log("=== background starting ===");
 
-var ws = new WebSocket("ws://127.0.0.1:9090/connws/");
+// Global variable
+var ws = new WebSocket("ws://54.250.138.78:9090/connws/");
 var wsEnabled = false;
+
 ws.onopen = function() {
-    console.log("[onopen] connect ws uri.");
+  console.log("[onopen] connect ws uri.");
+  var data = {
+    "Action" : "requireConnect"
+  };
+  ws.send(JSON.stringify(data));
+  wsEnabled = true;
 }
+
 ws.onmessage = function(e) {
     var res = JSON.parse(e.data);
-    if (res["Enabled"] == "true") {
+    if (wsEnabled && res["Action"] == "doReload") {
       pageReload();
     }
 }
+
 ws.onclose = function(e) {
     console.log("[onclose] connection closed (" + e.code + ")");
     delete ws;
+    wsEnabled = false;
 }
+
 ws.onerror = function (e) {
     console.log("[onerror] error!");
+    wsEnabled = false;
 }
 
 function wsConnect() {
-    var data = {
-        "Enabled" : "true"
-    };
-    ws.send(JSON.stringify(data));
-    wsEnabled = true;
+    
+    if (ws.readyState == 1) {
+        wsEnabled = true;
+    } else {
+        wsEnabled = false;
+    }
+    /* 
+    Check ws whether initial or not.
+    ==================================
+    CONNECTING 0 The connection is not yet open.
+    OPEN  1 The connection is open and ready to communicate.
+    CLOSING 2 The connection is in the process of closing.
+    CLOSED  3 The connection is closed or couldn't be opened.
+    
+    if (ws.readyState != 1) {
+        wsEnabled = false;
+        return;
+    }*/
 }
 
 function wsDisconnect() {
     var data = {
-        "Enabled" : "false"
+        "Action" : "requireDisconnect"
     };
     ws.send(JSON.stringify(data));
     wsEnabled = false;
@@ -44,24 +69,33 @@ function pageReload() {
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    console.log(sender.tab ?
-              "from a content script:" + sender.tab.url :
-              "from the extension");
-    if (request.wsAction == "getStatus") {
-       sendResponse({"wsEnabled": wsEnabled});
+    if (request.wsAction == "getConnStatus") {
+       var connStatus = (wsEnabled) ? "connect" : "disconnect";
+       changeBrowserActionIcon();
+       sendResponse({"wsEnabled": wsEnabled, "connStatus": connStatus});
     }
 
-    if (request.wsConn == true) {
-      wsConnect();
-      chrome.browserAction.setIcon({
-            path : "img/browser_action_icon_enabled_19.png"
-        });
-      sendResponse({connStatus: "connect"});
-    } else if (request.wsConn == false) {
-      wsDisconnect();
-      chrome.browserAction.setIcon({
-            path : "img/browser_action_icon_disabled_19.png"
-        });
-      sendResponse({connStatus: "disconnect"});
+    if (request.wsAction == "checkboxEvent") {
+        if (request.wsConn) {
+          wsConnect();
+        } else {
+          wsDisconnect();
+        }
+        var connStatus = (wsEnabled) ? "connect" : "disconnect";
+        changeBrowserActionIcon();
+        sendResponse({"connStatus": connStatus});
     }
 });
+
+// Change browser action icon
+function changeBrowserActionIcon() {
+    if (wsEnabled) {
+        chrome.browserAction.setIcon({
+              path : "img/browser_action_icon_enabled_19.png"
+          });
+    } else {
+        chrome.browserAction.setIcon({
+              path : "img/browser_action_icon_disabled_19.png"
+          });
+    }
+}
