@@ -201,3 +201,8 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
         }
     }
 }
+
+// TODO List :
+// Watching: /Users/xdite/projects/playgame
+// - extensions: .html .css .js .png .gif .jpg .php .php5 .py .rb .erb
+// - excluding changes in: */.git/* */.svn/* */.hg/*
