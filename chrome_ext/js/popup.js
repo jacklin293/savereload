@@ -13,6 +13,8 @@ function showConnStatus(connStatus) {
 }
 
 function doConnect(e) {
+    document.getElementById('loading').className = "";
+
     var enabled = document.getElementById('switch').checked;
     var url = document.getElementById('url').value;
     url = extractUrl(url);
@@ -24,17 +26,18 @@ function doConnect(e) {
     if (enabled) {
         setTimeout(function() {
             checkCount = 0;
-            while (checkCount < 3) {
+            while (checkCount < 5) {
                 if (getConnStatus()) {
                     break;
                 }
                 checkCount++;
             }
+            document.getElementById('loading').className = "hide";
         }, 500);    
     } else {
         getConnStatus();
+        document.getElementById('loading').className = "hide";
     }
-    
 }
 
 document.addEventListener('DOMContentLoaded', function () {

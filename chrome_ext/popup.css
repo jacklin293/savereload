@@ -16,3 +16,15 @@ body {
 #url {
     width: 180px;
 }
+
+#switch {
+    text-align: right;
+}
+
+.hide {
+    display: none;
+}
+
+.textAlighRight{
+    text-align: right;
+}
