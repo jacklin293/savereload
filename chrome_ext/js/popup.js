@@ -1,6 +1,7 @@
+var wsIsEstablished;
+
 // Show connection status
 function showConnStatus(connStatus) {
-    document.getElementById("connStatusContainer").style.display = "block";
     document.getElementById("connStatus").innerHTML = connStatus;
     if (connStatus == "connect") {
         document.getElementById("connStatus").className = "success";
@@ -15,10 +16,25 @@ function doConnect(e) {
     var enabled = document.getElementById('switch').checked;
     var url = document.getElementById('url').value;
     url = extractUrl(url);
-    chrome.runtime.sendMessage({"wsAction": "doConnect","wsConn": enabled, "url": url}, function(response) {
-        //showConnStatus(response.connStatus);
-    });
-    setInterval(getConnStatus(), 2000);
+
+    // Do websocket connect
+    chrome.runtime.sendMessage({"wsAction": "doConnect","wsConn": enabled, "url": url});
+
+    // Check websocket connection whether establish or not.
+    if (enabled) {
+        setTimeout(function() {
+            checkCount = 0;
+            while (checkCount < 3) {
+                if (getConnStatus()) {
+                    break;
+                }
+                checkCount++;
+            }
+        }, 500);    
+    } else {
+        getConnStatus();
+    }
+    
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -29,12 +45,15 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('switch').addEventListener('click', doConnect);
 })
 
+
 function getConnStatus() {
     chrome.runtime.sendMessage({wsAction: "getConnStatus"}, function(response) {
-        document.getElementById('switch').checked = response.wsEnabled;
+        document.getElementById('switch').checked = response.wsIsEstablished;
         document.getElementById('url').value = response.url;
         showConnStatus(response.connStatus);
+        wsIsEstablished = response.wsIsEstablished;
     });
+    return wsIsEstablished;
 }
 
 function extractUrl(url) {
@@ -43,4 +62,3 @@ function extractUrl(url) {
     }
     return url;
 }
-

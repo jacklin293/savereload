@@ -1,9 +1,5 @@
 body {
-    width: 160px;
-}
-
-#connStatusContainer{
-    display: none;
+    width: 240px;
 }
 
 .success {
@@ -14,6 +10,9 @@ body {
     color: red;
 }
 
+
+
+/* Html event element */
 #url {
-    width: 100px;
+    width: 180px;
 }

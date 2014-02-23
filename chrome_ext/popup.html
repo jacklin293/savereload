@@ -1,22 +1,27 @@
 <html>
 <head>
-    <!--<script src="js/jquery-1.11.0.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
--->
 <meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="popup.css">
 <script src="js/popup.js"></script>
 </head>
 <body>
-    <div>
-        <input type="checkbox" value="1" id="switch"/>
-        <label for="switch">啟動 Save Reload</label>
-    </div>
-    <div id="connStatusContainer">
-        <span>狀態 : </span><span id="connStatus"></span>
-    </div>
-    <div>
-        <span>網址 : </span><input type="input" id="url" placeholder="ex: 127.0.0.1 或 example.com"/>
-    </div>
+    <table>
+        <tr>
+            <td><input type="checkbox" value="1" id="switch"/></td>
+            <td><label for="switch">啟動 Save Reload</label></td>
+        </tr>
+        <tr>
+            <td>狀態 : </td>
+            <td><span id="connStatus"></span></td>
+        </tr>
+        <tr>
+            <td>網址 : </td>
+            <td><input type="text" id="url"></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><span class="tip">ex: 127.0.0.1 或 example.com</span></td>
+        </tr>
+    </table>
 </body>
 </html>

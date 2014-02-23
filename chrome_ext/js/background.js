@@ -2,7 +2,7 @@ console.log("=== background starting ===");
 
 // Global variable
 var ws;
-var wsEnabled = false;
+var wsIsEstablished = false;
 var url = "";
 
 function wsConnect() {
@@ -15,12 +15,12 @@ function wsConnect() {
         "Action" : "requireConnect"
       };
       ws.send(JSON.stringify(data));
-      wsEnabled = true;
+      wsIsEstablished = true;
     }
 
     ws.onmessage = function(e) {
         var res = JSON.parse(e.data);
-        if (wsEnabled && res["Action"] == "doReload") {
+        if (wsIsEstablished && res["Action"] == "doReload") {
           pageReload();
         }
     }
@@ -28,12 +28,12 @@ function wsConnect() {
     ws.onclose = function(e) {
         console.log("[onclose] connection closed (" + e.code + ")");
         delete ws;
-        wsEnabled = false;
+        wsIsEstablished = false;
     }
 
     ws.onerror = function (e) {
         console.log("[onerror] error!");
-        wsEnabled = false;
+        wsIsEstablished = false;
     }
 
     /*
@@ -45,7 +45,7 @@ function wsConnect() {
     CLOSED  3 The connection is closed or couldn't be opened.
 
     if (ws.readyState != 1) {
-        wsEnabled = false;
+        wsIsEstablished = false;
         return;
     }*/
 }
@@ -55,7 +55,7 @@ function wsDisconnect() {
         "Action" : "requireDisconnect"
     };
     ws.send(JSON.stringify(data));
-    wsEnabled = false;
+    wsIsEstablished = false;
 }
 
 function pageReload() {
@@ -68,9 +68,9 @@ function pageReload() {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.wsAction == "getConnStatus") {
-       var connStatus = (wsEnabled) ? "connect" : "disconnect";
+       var connStatus = (wsIsEstablished) ? "connect" : "disconnect";
        changeBrowserActionIcon();
-       sendResponse({"wsEnabled": wsEnabled, "connStatus": connStatus, "url": url});
+       sendResponse({"wsIsEstablished": wsIsEstablished, "connStatus": connStatus, "url": url});
     }
 
     if (request.wsAction == "doConnect") {
@@ -85,7 +85,7 @@ chrome.runtime.onMessage.addListener(
 
 // Change browser action icon
 function changeBrowserActionIcon() {
-    if (wsEnabled) {
+    if (wsIsEstablished) {
         chrome.browserAction.setIcon({
               path : "img/browser_action_icon_enabled_19.png"
           });
