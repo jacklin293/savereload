@@ -3,11 +3,10 @@ console.log("=== background starting ===");
 // Global variable
 var ws;
 var wsEnabled = false;
+var url = "";
 
+function wsConnect() {
 
-
-function wsConnect(url) {
-    
     ws = new WebSocket("ws://" + url + ":9090/connws/");
 
     ws.onopen = function() {
@@ -37,14 +36,14 @@ function wsConnect(url) {
         wsEnabled = false;
     }
 
-    /* 
+    /*
     Check ws whether initial or not.
     ==================================
     CONNECTING 0 The connection is not yet open.
     OPEN  1 The connection is open and ready to communicate.
     CLOSING 2 The connection is in the process of closing.
     CLOSED  3 The connection is closed or couldn't be opened.
-    
+
     if (ws.readyState != 1) {
         wsEnabled = false;
         return;
@@ -71,18 +70,16 @@ chrome.runtime.onMessage.addListener(
     if (request.wsAction == "getConnStatus") {
        var connStatus = (wsEnabled) ? "connect" : "disconnect";
        changeBrowserActionIcon();
-       sendResponse({"wsEnabled": wsEnabled, "connStatus": connStatus});
+       sendResponse({"wsEnabled": wsEnabled, "connStatus": connStatus, "url": url});
     }
 
-    if (request.wsAction == "checkboxEvent") {
+    if (request.wsAction == "doConnect") {
         if (request.wsConn) {
-          wsConnect(request.url);
+            url = request.url;
+          wsConnect();
         } else {
           wsDisconnect();
         }
-        var connStatus = (wsEnabled) ? "connect" : "disconnect";
-        changeBrowserActionIcon();
-        sendResponse({"connStatus": connStatus});
     }
 });
 
