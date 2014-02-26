@@ -26,14 +26,14 @@ function doConnect(e) {
     if (enabled) {
         setTimeout(function() {
             checkCount = 0;
-            while (checkCount < 5) {
+            while (checkCount < 14) {
                 if (getConnStatus()) {
                     break;
                 }
                 checkCount++;
             }
             document.getElementById('loading').className = "hide";
-        }, 500);    
+        }, 500);
     } else {
         getConnStatus();
         document.getElementById('loading').className = "hide";

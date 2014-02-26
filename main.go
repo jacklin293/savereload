@@ -82,21 +82,21 @@ func GetAction(e *fsnotify.FileEvent) string {
 }
 
 func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
-    var prevActionTime int
+    var prevActionSecond int
     msg := map[string]interface{}{}
     for {
         select {
         case ev := <-watcher.Event:
             // Prevent the same action output many times.
-
-            if prevActionTime-time.Now().Second() == 0 {
+            if prevActionSecond-time.Now().Second() == 0 {
                 continue
             }
+            prevActionSecond = time.Now().Second()
+
             // Ignore some file extension
             if CheckIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
                 continue
             }
-            prevActionTime = time.Now().Second()
             log.Println("event:", ev)
             msg["Action"] = "doReload"
             if err := args.Ws.WriteJSON(&msg); err != nil {
