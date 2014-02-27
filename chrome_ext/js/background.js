@@ -23,6 +23,9 @@ function wsConnect() {
         if (wsIsEstablished && res["Action"] == "doReload") {
           pageReload();
         }
+        if (wsIsEstablished && res["Action"] == "requireClose") {
+            wsIsEstablished = false;
+        }
     }
 
     ws.onclose = function(e) {
@@ -76,9 +79,18 @@ chrome.runtime.onMessage.addListener(
     if (request.wsAction == "doConnect") {
         if (request.wsConn) {
             url = request.url;
-          wsConnect();
+            wsConnect();
         } else {
-          wsDisconnect();
+            wsDisconnect();
+        }
+    }
+
+    if (request.wsAction == "doClose") {
+        if (wsIsEstablished) {
+            var data = {
+                "Action" : "requireClose"
+            };
+            ws.send(JSON.stringify(data));
         }
     }
 });

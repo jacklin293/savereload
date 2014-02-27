@@ -150,12 +150,10 @@ func (args *Args) ExecWatchFlow() {
 
 func main() {
     args := Args{}
-
     flag.StringVar(&args.Path, "p", "", "The file or folder path to watch")
     flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
     flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
     flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
-
     flag.Parse()
 
     // Listen websocket
@@ -195,9 +193,15 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
         }
         rec["ServerResponse"] = "Server received."
         fmt.Println(rec)
+
         if err = ws.WriteJSON(&rec); err != nil {
             fmt.Println("watch dir - Write : " + err.Error())
             return
+        }
+
+        // close
+        if rec["Action"] == "requireClose" {
+            os.Exit(0)
         }
     }
 }

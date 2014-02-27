@@ -1,5 +1,5 @@
 body {
-    width: 240px;
+    width: 300px;
 }
 
 .success {
@@ -14,11 +14,15 @@ body {
 
 /* Html event element */
 #url {
-    width: 180px;
+    width: 220px;
 }
 
 #switch {
     text-align: right;
+}
+
+#close {
+    float: right;
 }
 
 .hide {
