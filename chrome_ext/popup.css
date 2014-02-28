@@ -1,5 +1,5 @@
 body {
-    width: 300px;
+    width: 330px;
 }
 
 .success {
@@ -29,6 +29,7 @@ body {
     display: none;
 }
 
-.textAlighRight{
+.td1 {
     text-align: right;
+    width: auto;
 }

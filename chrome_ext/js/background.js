@@ -1,9 +1,10 @@
 console.log("=== background starting ===");
 
 // Global variable
-var ws;
-var wsIsEstablished = false;
-var url = "";
+var ws,
+    wsIsEstablished = false,
+    connSwitchStatus = false,
+    url = "";
 
 function wsConnect() {
 
@@ -15,13 +16,20 @@ function wsConnect() {
         "Action" : "requireConnect"
       };
       ws.send(JSON.stringify(data));
+      connSwitchStatus = true;
       wsIsEstablished = true;
     }
 
     ws.onmessage = function(e) {
         var res = JSON.parse(e.data);
+        if (wsIsEstablished && res["Action"] == "requireConnect") {
+            connSwitchStatus = true;
+        }
+        if (wsIsEstablished && res["Action"] == "requireDisconnect") {
+            connSwitchStatus = false;
+        }
         if (wsIsEstablished && res["Action"] == "doReload") {
-          pageReload();
+           pageReload();
         }
         if (wsIsEstablished && res["Action"] == "requireClose") {
             wsIsEstablished = false;
@@ -58,7 +66,7 @@ function wsDisconnect() {
         "Action" : "requireDisconnect"
     };
     ws.send(JSON.stringify(data));
-    wsIsEstablished = false;
+    connSwitchStatus = false;
 }
 
 function pageReload() {
@@ -71,9 +79,8 @@ function pageReload() {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.wsAction == "getConnStatus") {
-       var connStatus = (wsIsEstablished) ? "connect" : "disconnect";
        changeBrowserActionIcon();
-       sendResponse({"wsIsEstablished": wsIsEstablished, "connStatus": connStatus, "url": url});
+       sendResponse({"wsIsEstablished": wsIsEstablished, "connSwitchStatus": connSwitchStatus, "url": url});
     }
 
     if (request.wsAction == "doConnect") {

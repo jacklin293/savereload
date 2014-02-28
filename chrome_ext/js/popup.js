@@ -1,34 +1,48 @@
-var wsIsEstablished;
+var wsIsEstablished = false;
 
 // Show connection status
-function showConnStatus(connStatus) {
-    document.getElementById("connStatus").innerHTML = connStatus;
-    if (connStatus == "connect") {
-        document.getElementById("connStatus").className = "success";
-    } else {
-        document.getElementById("connStatus").className = "fail";
-    }
-
+function showConnStatus(wsIsEstablished, connSwitchStatus) {
     // If websocket connection is established, disabled url.
     if (wsIsEstablished) {
         document.getElementById("url").disabled = true;
+
+        // websocket connection status
+        document.getElementById("wsIsEstablished").innerHTML = "connect";
+        document.getElementById("wsIsEstablished").className = "success";
+
+        // Reload switch status
+        if (connSwitchStatus) {
+            document.getElementById("connSwitchStatus").innerHTML = "enabled";
+            document.getElementById("connSwitchStatus").className = "success";
+        } else {
+            document.getElementById("connSwitchStatus").innerHTML = "disabled";
+            document.getElementById("connSwitchStatus").className = "fail";
+        }
     } else {
         document.getElementById("url").disabled = false;
+
+        // websocket connection status
+        document.getElementById("wsIsEstablished").innerHTML = "disconnect";
+        document.getElementById("wsIsEstablished").className = "fail";
+
+        // Reload switch status
+        document.getElementById("connSwitchStatus").innerHTML = "disabled";
+        document.getElementById("connSwitchStatus").className = "fail";
     }
 }
 
 function doConnect(e) {
     document.getElementById('loading').className = "";
 
-    var enabled = document.getElementById('switch').checked;
+    var switchStatus = document.getElementById('switch').checked;
     var url = document.getElementById('url').value;
     url = extractUrl(url);
 
     // Do websocket connect
-    chrome.runtime.sendMessage({"wsAction": "doConnect","wsConn": enabled, "url": url});
+    chrome.runtime.sendMessage({"wsAction": "doConnect","wsConn": switchStatus, "url": url});
 
     // Check websocket connection whether establish or not.
-    if (enabled) {
+    if (switchStatus) {
         setTimeout(function() {
             checkCount = 0;
             while (checkCount < 14) {
@@ -69,17 +83,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function getConnStatus() {
     chrome.runtime.sendMessage({wsAction: "getConnStatus"}, function(response) {
-        document.getElementById('switch').checked = response.wsIsEstablished;
+        document.getElementById('url').value = response.url;
+        showConnStatus(response.wsIsEstablished, response.connSwitchStatus);
         wsIsEstablished = response.wsIsEstablished;
-        showConnStatus(response.connStatus);
 
-        // show close button
+        // show close websocket button
         if (wsIsEstablished) {
-            if (response.url != "") {
-                document.getElementById('close').className = "";
-            } else {
-                document.getElementById('close').className = "hide";
-            }
+            document.getElementById('switch').checked = response.connSwitchStatus;
+            document.getElementById('close').className = "";
+        } else {
+            document.getElementById('switch').checked = false;
+            document.getElementById('close').className = "hide";
         }
     });
     return wsIsEstablished;

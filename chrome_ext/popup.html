@@ -7,7 +7,7 @@
 <body>
     <table>
         <tr>
-            <td class="textAlighRight">
+            <td class="td1">
                 <img id="loading" class="hide" src="img/loading.gif"/>
                 <input type="checkbox" value="1" id="switch"/>
             </td>
@@ -17,16 +17,22 @@
             </td>
         </tr>
         <tr>
-            <td>狀態 : </td>
-            <td><span id="connStatus"></span></td>
+            <td class="td1">連線 :</td>
+            <td><span id="wsIsEstablished"></span></td>
+        <tr>
+            <td class="td1">監聽資料夾 :</td>
+            <td><span id="connSwitchStatus"></span></td>
         </tr>
         <tr>
-            <td>網址 : </td>
+            <td class="td1">網址 :</td>
             <td><input type="text" id="url"></td>
         </tr>
         <tr>
-            <td></td>
-            <td><span class="tip">ex: 127.0.0.1 或 example.com</span></td>
+            <td class="td1"></td>
+            <td>
+                127.0.0.1</br>
+                example.com
+            </td>
         </tr>
     </table>
 </body>
