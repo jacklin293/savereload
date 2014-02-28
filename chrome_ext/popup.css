@@ -10,7 +10,10 @@ body {
     color: red;
 }
 
-
+table {
+    margin: 0px;
+    padding: 0px;
+}
 
 /* Html event element */
 #url {
@@ -19,6 +22,11 @@ body {
 
 #switch {
     text-align: right;
+    vertical-align: top;
+}
+
+#loading {
+    vertical-align: top;
 }
 
 #close {
@@ -30,6 +38,7 @@ body {
 }
 
 .td1 {
+    height: 20px;
     text-align: right;
     width: auto;
 }

@@ -28,7 +28,7 @@ function wsConnect() {
         if (wsIsEstablished && res["Action"] == "requireDisconnect") {
             connSwitchStatus = false;
         }
-        if (wsIsEstablished && res["Action"] == "doReload") {
+        if (connSwitchStatus && res["Action"] == "doReload") {
            pageReload();
         }
         if (wsIsEstablished && res["Action"] == "requireClose") {
