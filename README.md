@@ -2,7 +2,7 @@
 
 1.
 
-create folder : `$GOPATH/clibs/include`
+    mkdir -p $GOPATH/clibs/include
 
 2. Don't use "go get" to install this package, because gosass.go : `#cgo LDFLAGS: -L../../clibs/lib -lsass -lstdc++`
 
