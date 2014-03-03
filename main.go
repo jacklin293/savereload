@@ -159,6 +159,8 @@ func main() {
 
     var sc sass.Compiler
     sc.CompileFolder("/tmp/qq/_scss", "/tmp/qq/_scss")
+    str, _ := sc.CompileFile("/tmp/qq/t.scss")
+    fmt.Println(str)
 
     // Listen websocket
     // 54.250.138.78
