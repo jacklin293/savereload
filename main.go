@@ -6,6 +6,7 @@ import (
     "fmt"
     "github.com/gorilla/websocket"
     "github.com/howeyc/fsnotify"
+    "gosass"
     "log"
     "net/http"
     "os"
@@ -155,6 +156,39 @@ func main() {
     flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
     flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
     flag.Parse()
+
+    // ----
+    s := "/tmp/qq/t.scss"
+    path := "/tmp/qq"
+    fmt.Println(1)
+    ctx := gosass.FileContext{
+        Options: gosass.Options{
+            OutputStyle:  gosass.NESTED_STYLE,
+            IncludePaths: make([]string, 0),
+        },
+        InputPath:    s,
+        OutputString: "",
+        ErrorStatus:  0,
+        ErrorMessage: "",
+    }
+    gosass.Compile(&ctx)
+    fmt.Println(2)
+    if ctx.ErrorStatus != 0 {
+        if ctx.ErrorMessage != "" {
+            fmt.Print(ctx.ErrorMessage)
+        } else {
+            fmt.Println("An error occured; no error message available.")
+        }
+    } else {
+        re := regexp.MustCompile("scss|sass")
+        name := re.ReplaceAllString(filepath.Base(s), "css")
+        // write out un-minified file
+        err := ioutil.WriteFile(filepath.Join(path, name), []byte(ctx.OutputString), 0644)
+        if err != nil {
+            panic(err)
+        }
+    }
+    // -------
 
     // Listen websocket
     // 54.250.138.78
