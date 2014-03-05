@@ -85,7 +85,6 @@ func GetAction(e *fsnotify.FileEvent) string {
 
 func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
     var prevActionSecond int
-    var sc sass.Compiler
     msg := map[string]interface{}{}
     for {
         select {
@@ -107,10 +106,13 @@ func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
                 return
             }
 
-            fmt.Println(ev.Name)
-            //sc.CompileFolder("/tmp/qq/_scss", "/tmp/qq/_scss")
-            //str, _ := sc.CompileFile("/tmp/qq/t.scss")
-            //fmt.Println(str)
+            // **!!**!! Not finished. Compile only modify
+            if filepath.Ext(ev.Name) == ".scss" {
+                fmt.Println(ev.Name)
+                if err := CompileSass(ev.Name); err != nil {
+                    fmt.Println(err.Error())
+                }
+            }
 
             fmt.Printf("Notify browser reload : %v\n", msg)
 
@@ -171,13 +173,12 @@ func FileExists(path string) bool {
     return true
 }
 
-func compileSass(sourceFilePath string) {
+func CompileSass(sourceFilePath string) error {
     re := regexp.MustCompile("scss|sass")
     fileName := re.ReplaceAllString(filepath.Base(sourceFilePath), "css")
     absPath, err := filepath.Abs(sourceFilePath)
     if err != nil {
-        fmt.Println("Sass compile error : " + err.Error())
-        return
+        return err
     }
     dirPath := filepath.Dir(absPath)
     targetFilePath := dirPath + string(os.PathSeparator) + fileName
@@ -198,6 +199,7 @@ func compileSass(sourceFilePath string) {
     if _, err = fi.Write([]byte(str)); err != nil {
         panic(err)
     }
+    return err
 }
 
 func main() {
