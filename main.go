@@ -12,6 +12,7 @@ import (
     "os"
     "os/exec"
     "path/filepath"
+    "regexp"
     "strings"
     "time"
 )
@@ -149,6 +150,49 @@ func (args *Args) ExecWatchFlow() {
 
 }
 
+func FileExists(path string) bool {
+    fileInfo, err := os.Stat(path)
+    if err != nil {
+        // no such file or dir
+        return false
+    }
+    if fileInfo.IsDir() {
+        // it's a directory
+        return false
+    }
+    // it's a file
+    return true
+}
+
+func compileSass(sourceFilePath string) {
+    re := regexp.MustCompile("scss|sass")
+    fileName := re.ReplaceAllString(filepath.Base(sourceFilePath), "css")
+    absPath, err := filepath.Abs(sourceFilePath)
+    if err != nil {
+        fmt.Println("Sass compile error : " + err.Error())
+        return
+    }
+    dirPath := filepath.Dir(absPath)
+    targetFilePath := dirPath + string(os.PathSeparator) + fileName
+    var fi *os.File
+    if FileExists(targetFilePath) {
+        os.Remove(targetFilePath)
+        fi, err = os.Open(targetFilePath)
+    }
+    fi, err = os.Create(targetFilePath)
+    if err != nil {
+        panic(err)
+    }
+    defer fi.Close()
+
+    // write a chunk
+    var sc sass.Compiler
+    str, _ := sc.CompileFile(sourceFilePath)
+    if _, err = fi.Write([]byte(str)); err != nil {
+        panic(err)
+    }
+}
+
 func main() {
     args := Args{}
     flag.StringVar(&args.Path, "p", "", "The file or folder path to watch")
@@ -157,10 +201,13 @@ func main() {
     flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
     flag.Parse()
 
-    var sc sass.Compiler
-    sc.CompileFolder("/tmp/qq/_scss", "/tmp/qq/_scss")
-    str, _ := sc.CompileFile("/tmp/qq/t.scss")
-    fmt.Println(str)
+    /***
+      sourceFilePath := "/tmp/qq/t.scss"
+      fmt.Println(1)
+      compileSass(sourceFilePath)
+      fmt.Println(2)
+      os.Exit(0)
+      ***/
 
     // Listen websocket
     // 54.250.138.78
