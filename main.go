@@ -210,6 +210,7 @@ func main() {
     flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
     flag.Parse()
 
+    // 修改一般檔案都只會改到 swp 造成 把swp擋掉會無法reload..不把swp擋掉又會一直reload
     // Listen websocket
     // 54.250.138.78
     http.HandleFunc("/connws/", args.ConnWs)
@@ -230,7 +231,7 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
     }
 
     args.Ws = ws
-    go args.ExecWatchFlow()
+    args.ExecWatchFlow()
 
     rec := map[string]interface{}{}
     for {
