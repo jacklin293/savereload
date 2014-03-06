@@ -231,7 +231,7 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
     }
 
     args.Ws = ws
-    args.ExecWatchFlow()
+    go args.ExecWatchFlow()
 
     rec := map[string]interface{}{}
     for {
