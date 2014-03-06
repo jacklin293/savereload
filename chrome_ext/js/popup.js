@@ -44,15 +44,9 @@ function doConnect(e) {
     // Check websocket connection whether establish or not.
     if (switchStatus) {
         setTimeout(function() {
-            checkCount = 0;
-            while (checkCount < 14) {
-                if (getConnStatus()) {
-                    break;
-                }
-                checkCount++;
-            }
+            getConnStatus();
             document.getElementById('loading').className = "hide";
-        }, 500);
+        }, 1500);
     } else {
         getConnStatus();
         document.getElementById('loading').className = "hide";
@@ -60,16 +54,12 @@ function doConnect(e) {
 }
 
 function doClose(e) {
-    chrome.runtime.sendMessage({wsAction: "doClose"});
+    chrome.runtime.sendMessage({wsAction: "doClose"}, function(response) {
+            console.log(response.log);
+    });
     setTimeout(function () {
-        checkCount = 0;
-        while (checkCount < 14) {
-            if ( ! getConnStatus()) {
-                break;
-            }
-            checkCount++;
-        }
-    }, 500);
+        getConnStatus();
+    }, 1000);
 }
 
 document.addEventListener('DOMContentLoaded', function () {

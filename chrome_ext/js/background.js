@@ -99,6 +99,7 @@ chrome.runtime.onMessage.addListener(
             };
             ws.send(JSON.stringify(data));
         }
+        sendResponse({"log" : wsIsEstablished});
     }
 });
 
