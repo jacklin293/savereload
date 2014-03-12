@@ -24,19 +24,9 @@ type Args struct {
     Ws        *websocket.Conn
 }
 
-func DirExists(path string) (bool, error) {
-    fileInfo, err := os.Stat(path)
-    if err != nil {
-        // no such file or dir
-        return false, err
-    }
-    if fileInfo.IsDir() {
-        // it's a directory
-        return true, nil
-    }
-    // it's a file
-    return false, nil
-}
+var (
+    DefaultPath, _ = filepath.Abs("./")
+)
 
 func RunCommand(cmd string) {
     splitCmd := strings.Split(cmd, " ")
@@ -149,31 +139,14 @@ func (args *Args) ExecWatchFlow() {
 
 }
 
-func FileExists(path string) bool {
-    fileInfo, err := os.Stat(path)
-    if err != nil {
-        // no such file or dir
-        return false
-    }
-    if fileInfo.IsDir() {
-        // it's a directory
-        return false
-    }
-    // it's a file
-    return true
-}
-
 func main() {
     args := Args{}
-    flag.StringVar(&args.Path, "p", "", "The file or folder path to watch")
+    flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
     flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
     flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-    flag.StringVar(&args.IgnoreExt, "ig", "", "Ignore file extension")
+    flag.StringVar(&args.IgnoreExt, "ig", "swp", "Ignore file extension")
     flag.Parse()
 
-    // 修改一般檔案都只會改到 swp 造成 把swp擋掉會無法reload..不把swp擋掉又會一直reload
-    // Listen websocket
-    // 54.250.138.78
     http.HandleFunc("/connws/", args.ConnWs)
     err := http.ListenAndServe(":9090", nil)
     if err != nil {
