@@ -6,13 +6,11 @@ import (
     "fmt"
     "github.com/gorilla/websocket"
     "github.com/howeyc/fsnotify"
-    "github.com/suapapa/go_sass"
     "log"
     "net/http"
     "os"
     "os/exec"
     "path/filepath"
-    "regexp"
     "strings"
     "time"
 )
@@ -96,7 +94,7 @@ func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
             prevActionSecond = time.Now().Second()
 
             // Ignore some file extension
-            if CheckIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
+            if len(args.IgnoreExt) > 0 && CheckIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
                 continue
             }
             log.Println("event:", ev)
@@ -104,14 +102,6 @@ func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
             if err := args.Ws.WriteJSON(&msg); err != nil {
                 fmt.Println("watch dir - Write : " + err.Error())
                 return
-            }
-
-            // **!!**!! Not finished. Compile only modify
-            if filepath.Ext(ev.Name) == ".scss" {
-                fmt.Println(ev.Name)
-                if err := CompileSass(ev.Name); err != nil {
-                    fmt.Println(err.Error())
-                }
             }
 
             fmt.Printf("Notify browser reload : %v\n", msg)
@@ -173,41 +163,12 @@ func FileExists(path string) bool {
     return true
 }
 
-func CompileSass(sourceFilePath string) error {
-    re := regexp.MustCompile("scss|sass")
-    fileName := re.ReplaceAllString(filepath.Base(sourceFilePath), "css")
-    absPath, err := filepath.Abs(sourceFilePath)
-    if err != nil {
-        return err
-    }
-    dirPath := filepath.Dir(absPath)
-    targetFilePath := dirPath + string(os.PathSeparator) + fileName
-    var fi *os.File
-    if FileExists(targetFilePath) {
-        os.Remove(targetFilePath)
-        fi, err = os.Open(targetFilePath)
-    }
-    fi, err = os.Create(targetFilePath)
-    if err != nil {
-        panic(err)
-    }
-    defer fi.Close()
-
-    // write a chunk
-    var sc sass.Compiler
-    str, _ := sc.CompileFile(sourceFilePath)
-    if _, err = fi.Write([]byte(str)); err != nil {
-        panic(err)
-    }
-    return err
-}
-
 func main() {
     args := Args{}
     flag.StringVar(&args.Path, "p", "", "The file or folder path to watch")
     flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
     flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
+    flag.StringVar(&args.IgnoreExt, "ig", "", "Ignore file extension")
     flag.Parse()
 
     // 修改一般檔案都只會改到 swp 造成 把swp擋掉會無法reload..不把swp擋掉又會一直reload
