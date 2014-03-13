@@ -42,33 +42,13 @@ func RunCommand(cmd string) {
     }
 }
 
-func CheckIgnoreExt(fileExt string, ignoreExts []string) bool {
+func IsIgnoreExt(fileExt string, ignoreExts []string) bool {
     for _, ignoreExt := range ignoreExts {
         if fileExt == "."+ignoreExt {
             return true
         }
     }
     return false
-}
-
-func GetAction(e *fsnotify.FileEvent) string {
-    var events string = ""
-    if e.IsCreate() {
-        events += "|" + "CREATE"
-    }
-    if e.IsDelete() {
-        events += "|" + "DELETE"
-    }
-    if e.IsModify() {
-        events += "|" + "MODIFY"
-    }
-    if e.IsRename() {
-        events += "|" + "RENAME"
-    }
-    if len(events) > 0 {
-        events = events[1:]
-    }
-    return events
 }
 
 func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
@@ -81,13 +61,16 @@ func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
             if prevActionSecond-time.Now().Second() == 0 {
                 continue
             }
-            prevActionSecond = time.Now().Second()
 
             // Ignore some file extension
-            if len(args.IgnoreExt) > 0 && CheckIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
+            if len(args.IgnoreExt) > 0 && IsIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
+                fmt.Println("ignore")
                 continue
             }
-            log.Println("event:", ev)
+
+            // Must be put after ignoring file extension checking, because arise bug if first .fff.swp second fff
+            prevActionSecond = time.Now().Second()
+
             msg["Action"] = "doReload"
             if err := args.Ws.WriteJSON(&msg); err != nil {
                 fmt.Println("watch dir - Write : " + err.Error())
