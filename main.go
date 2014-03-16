@@ -71,6 +71,7 @@ func (args *Args) watch(paths []string) {
 
                 // Ignore some file extension
                 if len(args.IgnoreExt) > 0 && IsIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
+                    fmt.Println("ignore " + ev.Name)
                     continue
                 }
 
@@ -83,7 +84,7 @@ func (args *Args) watch(paths []string) {
                     return
                 }
 
-                fmt.Printf("Notify browser reload : %v\n", msg)
+                fmt.Printf("Detect %s changing, notify browser reload : %v\n", ev.Name, msg)
 
                 if args.Cmd != "" {
                     RunCommand(args.Cmd)
@@ -155,7 +156,7 @@ func main() {
     flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
     flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
     flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-    flag.StringVar(&args.IgnoreExt, "ig", "swp", "Ignore file extension")
+    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
     flag.Parse()
 
     http.HandleFunc("/connws/", args.ConnWs)
@@ -208,7 +209,7 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
 
 // TODO List :
 // chrome extension  啟動 save reload 按鈕 分開為 連線及監聽按鈕要分開為兩個checkbox, 結束按鈕就不用了
-// watch directory recursive
 // UI input directory that i want watching
 // - extensions: .html .css .js .png .gif .jpg .php .php5 .py .rb .erb
 // - excluding changes in: */.git/* */.svn/* */.hg/*
+// Strip -c flag

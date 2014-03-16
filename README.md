@@ -16,6 +16,8 @@ Detect directory, reload current page when file changed.
 
 ### [3] Open chrome extension and type IP / domain
 
-# Others
+# Default setting
 
-* Default port is 9112, not support other port so far.
+* Port is 9112, not support other port so far.
+* Watch directory in recursion, you can use `-r=false` to disable recursive watching.
+* Ignore file extension `.swp` `.swpx`, you can set custom list (`-ig swp|git|swpx`) that you want to ignore the file extension.
