@@ -7,8 +7,7 @@ var ws,
     url = "";
 
 function wsConnect() {
-
-    ws = new WebSocket("ws://" + url + ":9090/connws/");
+    ws = new WebSocket("ws://" + url + ":9112/connws/");
 
     ws.onopen = function() {
       console.log("[onopen] connect ws uri.");

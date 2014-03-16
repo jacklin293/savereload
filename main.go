@@ -51,7 +51,7 @@ func IsIgnoreExt(fileExt string, ignoreExts []string) bool {
     return false
 }
 
-func (args *Args) watch() {
+func (args *Args) watch(paths []string) {
     watcher, err := fsnotify.NewWatcher()
     if err != nil {
         log.Fatal(err)
@@ -95,8 +95,9 @@ func (args *Args) watch() {
         }
     }()
 
-    if len(paths) != 1 {
-        if err = watcher.Watch(paths); err!= nil {
+    for _, path := range paths {
+        err = watcher.Watch(path)
+        if err != nil {
             log.Fatalln(err)
         }
     }
@@ -121,18 +122,19 @@ func (args *Args) ExecWatchFlow() {
     args.Path = filepath.Clean(args.Path)
 
     // Get all subfolder
+    var paths []string
     if args.Recurse {
-        paths, err := Walk(args.Path)
+        paths, err = Walk(args.Path)
         if err != nil {
             log.Fatalln(err)
         }
     } else {
         // Only watch one folder
-        paths = args.Path
+        paths = append(paths, args.Path)
     }
 
     // Watch
-    args.watch(path)
+    args.watch(paths)
 }
 
 func Walk(rootDir string) (paths []string, err error) {
@@ -158,7 +160,7 @@ func main() {
     flag.Parse()
 
     http.HandleFunc("/connws/", args.ConnWs)
-    err := http.ListenAndServe(":9090", nil)
+    err := http.ListenAndServe(":9112", nil)
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
     }
