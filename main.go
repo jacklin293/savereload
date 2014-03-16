@@ -206,10 +206,3 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
         }
     }
 }
-
-// TODO List :
-// chrome extension  啟動 save reload 按鈕 分開為 連線及監聽按鈕要分開為兩個checkbox, 結束按鈕就不用了
-// UI input directory that i want watching
-// - extensions: .html .css .js .png .gif .jpg .php .php5 .py .rb .erb
-// - excluding changes in: */.git/* */.svn/* */.hg/*
-// Strip -c flag
