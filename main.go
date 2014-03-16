@@ -71,7 +71,6 @@ func (args *Args) watch(paths []string) {
 
                 // Ignore some file extension
                 if len(args.IgnoreExt) > 0 && IsIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
-                    fmt.Println("ignore")
                     continue
                 }
 
@@ -113,9 +112,9 @@ func (args *Args) ExecWatchFlow() {
         os.Exit(0)
     }
     if isDir {
-        fmt.Println("Dir")
+        fmt.Println("Path type : Dir")
     } else {
-        fmt.Println("File")
+        fmt.Println("Path type : File")
     }
 
     // Clean Path
