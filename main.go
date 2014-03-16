@@ -51,41 +51,57 @@ func IsIgnoreExt(fileExt string, ignoreExts []string) bool {
     return false
 }
 
-func (args *Args) watchDirectory(watcher *fsnotify.Watcher) {
-    var prevActionSecond int
-    msg := map[string]interface{}{}
-    for {
-        select {
-        case ev := <-watcher.Event:
-            // Prevent the same action output many times.
-            if prevActionSecond-time.Now().Second() == 0 {
-                continue
+func (args *Args) watch() {
+    watcher, err := fsnotify.NewWatcher()
+    if err != nil {
+        log.Fatal(err)
+    }
+    done := make(chan bool)
+
+    go func() {
+        var prevActionSecond int
+        msg := map[string]interface{}{}
+        for {
+            select {
+            case ev := <-watcher.Event:
+                // Prevent the same action output many times.
+                if prevActionSecond-time.Now().Second() == 0 {
+                    continue
+                }
+
+                // Ignore some file extension
+                if len(args.IgnoreExt) > 0 && IsIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
+                    fmt.Println("ignore")
+                    continue
+                }
+
+                // Must be put after ignoring file extension checking, because arise bug if first .fff.swp second fff
+                prevActionSecond = time.Now().Second()
+
+                msg["Action"] = "doReload"
+                if err := args.Ws.WriteJSON(&msg); err != nil {
+                    fmt.Println("watch dir - Write : " + err.Error())
+                    return
+                }
+
+                fmt.Printf("Notify browser reload : %v\n", msg)
+
+                if args.Cmd != "" {
+                    RunCommand(args.Cmd)
+                }
+            case err := <-watcher.Error:
+                log.Fatal(err)
             }
+        }
+    }()
 
-            // Ignore some file extension
-            if len(args.IgnoreExt) > 0 && IsIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
-                fmt.Println("ignore")
-                continue
-            }
-
-            // Must be put after ignoring file extension checking, because arise bug if first .fff.swp second fff
-            prevActionSecond = time.Now().Second()
-
-            msg["Action"] = "doReload"
-            if err := args.Ws.WriteJSON(&msg); err != nil {
-                fmt.Println("watch dir - Write : " + err.Error())
-                return
-            }
-
-            fmt.Printf("Notify browser reload : %v\n", msg)
-
-            if args.Cmd != "" {
-                RunCommand(args.Cmd)
-            }
-        case err := <-watcher.Error:
-            log.Fatal(err)
+    if len(paths) != 1 {
+        if err = watcher.Watch(paths); err!= nil {
+            log.Fatalln(err)
         }
     }
+    <-done
+    watcher.Close()
 }
 
 func (args *Args) ExecWatchFlow() {
@@ -104,22 +120,33 @@ func (args *Args) ExecWatchFlow() {
     // Clean Path
     args.Path = filepath.Clean(args.Path)
 
-    // Watch start
-    watcher, err := fsnotify.NewWatcher()
-    if err != nil {
-        log.Fatal(err)
+    // Get all subfolder
+    if args.Recurse {
+        paths, err := Walk(args.Path)
+        if err != nil {
+            log.Fatalln(err)
+        }
+    } else {
+        // Only watch one folder
+        paths = args.Path
     }
 
-    done := make(chan bool)
-    go args.watchDirectory(watcher)
+    // Watch
+    args.watch(path)
+}
 
-    err = watcher.Watch(args.Path)
+func Walk(rootDir string) (paths []string, err error) {
+    err = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+        if !info.IsDir() || strings.Contains(path, ".git") {
+            return nil
+        }
+        paths = append(paths, path)
+        return nil
+    })
     if err != nil {
-        log.Fatal(err)
+        return
     }
-    <-done
-    watcher.Close()
-
+    return
 }
 
 func main() {
