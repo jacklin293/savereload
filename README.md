@@ -18,9 +18,9 @@ Detect directory, reload current page when file changed.
 
 # Option
 
-`-p` : Watching path. Use `-p /tmp/test` to set watching target.
-`-r` : Watch subfolder under path. Default is recursive. Use `-r=false` to disable recursive watching.
-`-ig` : Ignore file extension changing. Default is `swp|swpx`.  Use `-ig swp|git|swpx|conf` to set ignorant list.
+* `-p` : Watching path. Use `-p /tmp/test` to set watching target.
+* `-r` : Watch subfolder under path. Default is recursive. Use `-r=false` to disable recursive watching.
+* `-ig` : Ignore file extension changing. Default is `swp|swpx`.  Use `-ig swp|git|swpx|conf` to set ignorant list.
 
 # Notice !!
 
