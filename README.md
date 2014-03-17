@@ -32,6 +32,7 @@ Detect directory, reload current page when file changed.
 
 * Dynamic add folder, but not monitor.  If folder and not exist then add to monitor.
 * Change port
+* watch /tmp currently message on server output
 
 ### Miscellaneous
 
