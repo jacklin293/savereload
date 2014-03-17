@@ -156,7 +156,7 @@ func main() {
     flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
     flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
     flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx", "Ignore file extension")
+    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx|swx", "Ignore file extension")
     flag.Parse()
 
     http.HandleFunc("/connws/", args.ConnWs)
