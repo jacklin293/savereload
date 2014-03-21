@@ -59,19 +59,20 @@ func (args *Args) watch(paths []string) {
     done := make(chan bool)
 
     go func() {
-        var prevActionSecond int
+        var prevActionSecond, duration int
         msg := map[string]interface{}{}
         for {
             select {
             case ev := <-watcher.Event:
                 // Prevent the same action output many times.
-                if prevActionSecond-time.Now().Second() == 0 {
+                duration = prevActionSecond-time.Now().Second()
+                if duration == 0 {
                     continue
                 }
 
                 // Ignore some file extension
                 if len(args.IgnoreExt) > 0 && IsIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
-                    fmt.Println("ignore " + ev.Name)
+                    fmt.Println("Ignore " + ev.Name)
                     continue
                 }
 
