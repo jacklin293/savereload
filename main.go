@@ -13,6 +13,8 @@ import (
     "path/filepath"
     "strings"
     "time"
+    "regexp"
+    "savereload/gosass"
 )
 
 type Args struct {
@@ -27,6 +29,52 @@ type Args struct {
 var (
     DefaultPath, _ = filepath.Abs("./")
 )
+
+func CompileSass(sourceFilePath string) error {
+    re := regexp.MustCompile("scss|sass")
+    fileName := re.ReplaceAllString(filepath.Base(sourceFilePath), "css")
+    absPath, err := filepath.Abs(sourceFilePath)
+    if err != nil {
+        return err
+    }
+    dirPath := filepath.Dir(absPath)
+    targetFilePath := dirPath + string(os.PathSeparator) + fileName
+    var fi *os.File
+    if FileExists(targetFilePath) {
+        os.Remove(targetFilePath)
+        fi, err = os.Open(targetFilePath)
+    }
+    fi, err = os.Create(targetFilePath)
+    if err != nil {
+        panic(err)
+    }
+    defer fi.Close()
+
+    // write a chunk
+    var sc sass.Compiler
+    str, _ := sc.CompileFile(sourceFilePath)
+    if _, err = fi.Write([]byte(str)); err != nil {
+        panic(err)
+    }
+    return err
+}
+
+func main() {
+    args := Args{}
+    flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
+    flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
+    flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
+    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx|swx", "Ignore file extension")
+    flag.Parse()
+
+    CompileSass("/tmp/qq/simple.scss")
+
+    http.HandleFunc("/connws/", args.ConnWs)
+    err := http.ListenAndServe(":9112", nil)
+    if err != nil {
+        log.Fatal("ListenAndServe: ", err)
+    }
+}
 
 func RunCommand(cmd string) {
     splitCmd := strings.Split(cmd, " ")
@@ -150,21 +198,6 @@ func Walk(rootDir string) (paths []string, err error) {
         return
     }
     return
-}
-
-func main() {
-    args := Args{}
-    flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
-    flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
-    flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx|swx", "Ignore file extension")
-    flag.Parse()
-
-    http.HandleFunc("/connws/", args.ConnWs)
-    err := http.ListenAndServe(":9112", nil)
-    if err != nil {
-        log.Fatal("ListenAndServe: ", err)
-    }
 }
 
 func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {

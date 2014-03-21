@@ -41,3 +41,12 @@ Detect directory, reload current page when file changed.
 * - extensions: .html .css .js .png .gif .jpg .php .php5 .py .rb .erb
 * - excluding changes in: */.git/* */.svn/* */.hg/*
 * Strip -c flag
+
+
+# 3rd package
+
+* [gosass](https://github.com/moovweb/gosass)
+* [libsass](https://github.com/hcatlin/libsass)
+
+
+
