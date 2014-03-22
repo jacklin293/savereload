@@ -30,33 +30,60 @@ var (
     DefaultPath, _ = filepath.Abs("./")
 )
 
-func CompileSass(sourceFilePath string) error {
-    re := regexp.MustCompile("scss|sass")
-    fileName := re.ReplaceAllString(filepath.Base(sourceFilePath), "css")
-    absPath, err := filepath.Abs(sourceFilePath)
+func CompileSass(sassFilePath string) error {
+    // Get sass source file path
+    sassFullPath, err := filepath.Abs(sassFilePath)
     if err != nil {
         return err
     }
-    dirPath := filepath.Dir(absPath)
-    targetFilePath := dirPath + string(os.PathSeparator) + fileName
-    var fi *os.File
-    if FileExists(targetFilePath) {
-        os.Remove(targetFilePath)
-        fi, err = os.Open(targetFilePath)
-    }
-    fi, err = os.Create(targetFilePath)
-    if err != nil {
-        panic(err)
-    }
-    defer fi.Close()
+    sassDirPath := filepath.Dir(sassFullPath)
+
+    // Assemble css file full path
+    re := regexp.MustCompile("scss|sass")
+    cssFileName := re.ReplaceAllString(filepath.Base(sassFullPath), "css")
+    cssFullPath := sassDirPath + string(os.PathSeparator) + cssFileName
 
     // write a chunk
-    var sc sass.Compiler
-    str, _ := sc.CompileFile(sourceFilePath)
-    if _, err = fi.Write([]byte(str)); err != nil {
-        panic(err)
+    ctx := gosass.FileContext {
+        Options: gosass.Options{
+            OutputStyle: gosass.NESTED_STYLE,
+            IncludePaths: make([]string, 0),
+        },
+        InputPath: cssFullPath,
+        OutputString: "",
+        ErrorStatus: 0,
+        ErrorMessage: "",
     }
-    return err
+    gosass.CompileFile(&ctx)
+    if ctx.ErrorStatus != 0 {
+        if ctx.ErrorMessage != "" {
+            return errors.New(ctx.ErrorMessage)
+        } else {
+            return errors.New("Sass compile : Unknow error.")
+        }
+    } else {
+        // Create css file, if ex
+        var fi *os.File
+        cssFileExist, err := FileExists(cssFullPath)
+        if err != nil {
+            return err
+        }
+        if cssFileExist {
+            os.Remove(cssFullPath)
+            fi, err = os.Open(cssFullPath)
+        } else {
+            fi, err = os.Create(cssFullPath)
+            if err != nil {
+                panic(err)
+            }
+        }
+        defer fi.Close()
+
+        if _, err = fi.Write([]byte(ctx.OutputString)); err != nil {
+            panic(err)
+        }
+        return err
+    }
 }
 
 func main() {
@@ -67,7 +94,10 @@ func main() {
     flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx|swx", "Ignore file extension")
     flag.Parse()
 
-    CompileSass("/tmp/qq/simple.scss")
+    if err := CompileSass("/tmp/qq/simple.scss"); err != nil {
+        fmt.Println(err.Error())
+    }
+
 
     http.HandleFunc("/connws/", args.ConnWs)
     err := http.ListenAndServe(":9112", nil)
