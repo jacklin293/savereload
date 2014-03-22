@@ -48,5 +48,12 @@ Detect directory, reload current page when file changed.
 * [gosass](https://github.com/moovweb/gosass)
 * [libsass](https://github.com/hcatlin/libsass)
 
+install libsass :
+
+cd libsass
+automake
+make
+sudo make install
+
 
 
