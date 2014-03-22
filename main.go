@@ -43,7 +43,6 @@ func CompileSass(sassFilePath string) error {
     cssFileName := re.ReplaceAllString(filepath.Base(sassFullPath), "css")
     cssFullPath := sassDirPath + string(os.PathSeparator) + cssFileName
 
-    // write a chunk
     ctx := gosass.FileContext {
         Options: gosass.Options{
             OutputStyle: gosass.NESTED_STYLE,
@@ -55,6 +54,21 @@ func CompileSass(sassFilePath string) error {
         ErrorMessage: "",
     }
     gosass.CompileFile(&ctx)
+    /*
+    ctx := gosass.Context {
+        Options: gosass.Options{
+            OutputStyle: gosass.NESTED_STYLE,
+            IncludePaths: make([]string, 0),
+        },
+        SourceString: qq,
+        OutputString: "",
+        ErrorStatus: 0,
+        ErrorMessage: "",
+    }
+    fmt.Println(3)
+    gosass.Compile(&ctx)
+    */
+
     if ctx.ErrorStatus != 0 {
         if ctx.ErrorMessage != "" {
             return errors.New(ctx.ErrorMessage)
@@ -62,7 +76,7 @@ func CompileSass(sassFilePath string) error {
             return errors.New("Sass compile : Unknow error.")
         }
     } else {
-        // Create css file, if ex
+        // Create css file
         var fi *os.File
         cssFileExist, err := FileExists(cssFullPath)
         if err != nil {
@@ -71,12 +85,12 @@ func CompileSass(sassFilePath string) error {
         if cssFileExist {
             os.Remove(cssFullPath)
             fi, err = os.Open(cssFullPath)
-        } else {
+        }
+
             fi, err = os.Create(cssFullPath)
             if err != nil {
                 panic(err)
             }
-        }
         defer fi.Close()
 
         if _, err = fi.Write([]byte(ctx.OutputString)); err != nil {
@@ -86,18 +100,49 @@ func CompileSass(sassFilePath string) error {
     }
 }
 
+func sass(fileName string) (result string) {
+    ctx := gosass.FileContext{
+        Options: gosass.Options{
+            OutputStyle:  gosass.NESTED_STYLE,
+            IncludePaths: make([]string, 0),
+        },
+        InputPath:    fileName,
+        OutputString: "",
+        ErrorStatus:  0,
+        ErrorMessage: "",
+    }
+
+         fmt.Println(1)
+    gosass.CompileFile(&ctx)
+    fmt.Println(2)
+             os.Exit(0)
+
+    if ctx.ErrorStatus != 0 {
+        if ctx.ErrorMessage != "" {
+            return "ERROR: " + ctx.ErrorMessage
+        } else {
+            return "UNKNOWN ERROR"
+        }
+    } else {
+        result = ctx.OutputString
+    }
+
+    return result
+}
+
 func main() {
+
+    result := sass("/tmp/qq/simple.scss")
+    fmt.Println(result)
+
+    os.Exit(0)
+
     args := Args{}
     flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
     flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
     flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
     flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx|swx", "Ignore file extension")
     flag.Parse()
-
-    if err := CompileSass("/tmp/qq/simple.scss"); err != nil {
-        fmt.Println(err.Error())
-    }
-
 
     http.HandleFunc("/connws/", args.ConnWs)
     err := http.ListenAndServe(":9112", nil)
