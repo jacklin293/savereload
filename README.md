@@ -43,15 +43,13 @@ Detect directory, reload current page when file changed.
 * Strip -c flag
 
 
-# 3rd package
-
-* [gosass](https://github.com/moovweb/gosass)
-* [libsass](https://github.com/hcatlin/libsass)
-
 # Install libsass
 
 Linux :
 
+    cd gosass/libsass
+    make
+    sudo make install
 
 Mac OS :
 
