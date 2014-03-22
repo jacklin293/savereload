@@ -46,28 +46,15 @@ func CompileSass(sassFilePath string) error {
     ctx := gosass.FileContext {
         Options: gosass.Options{
             OutputStyle: gosass.NESTED_STYLE,
+            SourceComments: false,
             IncludePaths: make([]string, 0),
         },
-        InputPath: cssFullPath,
+        InputPath: sassFullPath,
         OutputString: "",
         ErrorStatus: 0,
         ErrorMessage: "",
     }
     gosass.CompileFile(&ctx)
-    /*
-    ctx := gosass.Context {
-        Options: gosass.Options{
-            OutputStyle: gosass.NESTED_STYLE,
-            IncludePaths: make([]string, 0),
-        },
-        SourceString: qq,
-        OutputString: "",
-        ErrorStatus: 0,
-        ErrorMessage: "",
-    }
-    fmt.Println(3)
-    gosass.Compile(&ctx)
-    */
 
     if ctx.ErrorStatus != 0 {
         if ctx.ErrorMessage != "" {
@@ -78,65 +65,23 @@ func CompileSass(sassFilePath string) error {
     } else {
         // Create css file
         var fi *os.File
-        cssFileExist, err := FileExists(cssFullPath)
+        if FileExists(cssFullPath) {
+            os.Remove(cssFullPath)
+        }
+        fi, err = os.Create(cssFullPath)
         if err != nil {
             return err
         }
-        if cssFileExist {
-            os.Remove(cssFullPath)
-            fi, err = os.Open(cssFullPath)
-        }
-
-            fi, err = os.Create(cssFullPath)
-            if err != nil {
-                panic(err)
-            }
         defer fi.Close()
 
         if _, err = fi.Write([]byte(ctx.OutputString)); err != nil {
-            panic(err)
+            return err
         }
         return err
     }
 }
 
-func sass(fileName string) (result string) {
-    ctx := gosass.FileContext{
-        Options: gosass.Options{
-            OutputStyle:  gosass.NESTED_STYLE,
-            IncludePaths: make([]string, 0),
-        },
-        InputPath:    fileName,
-        OutputString: "",
-        ErrorStatus:  0,
-        ErrorMessage: "",
-    }
-
-         fmt.Println(1)
-    gosass.CompileFile(&ctx)
-    fmt.Println(2)
-             os.Exit(0)
-
-    if ctx.ErrorStatus != 0 {
-        if ctx.ErrorMessage != "" {
-            return "ERROR: " + ctx.ErrorMessage
-        } else {
-            return "UNKNOWN ERROR"
-        }
-    } else {
-        result = ctx.OutputString
-    }
-
-    return result
-}
-
 func main() {
-
-    result := sass("/tmp/qq/simple.scss")
-    fmt.Println(result)
-
-    os.Exit(0)
-
     args := Args{}
     flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
     flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
@@ -199,6 +144,14 @@ func (args *Args) watch(paths []string) {
                     continue
                 }
 
+                // Compile sass file
+                if filepath.Ext(ev.Name) == ".scss" {
+                    if err := CompileSass(ev.Name); err != nil {
+                        fmt.Println("Compile scss error in watching event.")
+                        continue
+                    }
+                }
+
                 // Must be put after ignoring file extension checking, because arise bug if first .fff.swp second fff
                 prevActionSecond = time.Now().Second()
 
@@ -231,12 +184,7 @@ func (args *Args) watch(paths []string) {
 
 func (args *Args) ExecWatchFlow() {
     // Check path
-    isDir, err := DirExists(args.Path)
-    if err != nil {
-        fmt.Println(err.Error())
-        os.Exit(0)
-    }
-    if isDir {
+    if DirExists(args.Path) {
         fmt.Println("Path type : Dir")
     } else {
         fmt.Println("Path type : File")
@@ -244,21 +192,26 @@ func (args *Args) ExecWatchFlow() {
 
     // Clean Path
     args.Path = filepath.Clean(args.Path)
+    fmt.Printf("Watch %s ...\n", args.Path)
 
     // Get all subfolder
-    var paths []string
     if args.Recurse {
-        paths, err = Walk(args.Path)
+        paths, err := Walk(args.Path)
         if err != nil {
-            log.Fatalln(err)
+            log.Fatal("Walk path error")
         }
+
+        // Watch
+        args.watch(paths)
     } else {
         // Only watch one folder
+        var paths []string
         paths = append(paths, args.Path)
+
+        // Watch
+        args.watch(paths)
     }
 
-    // Watch
-    args.watch(paths)
 }
 
 func Walk(rootDir string) (paths []string, err error) {

@@ -32,7 +32,7 @@ Detect directory, reload current page when file changed.
 
 * Dynamic add folder, but not monitor.  If folder and not exist then add to monitor.
 * Change port
-* watch /tmp currently message on server output
+* 將 compile sass 切為另一個 flag 的功能(應該也是 watch dir)
 
 ### Miscellaneous
 

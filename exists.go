@@ -6,40 +6,32 @@ import (
     "path/filepath"
 )
 
-func FileExists(path string) (bool, error) {
-    file, err := os.Open(path) // For read access.
+func FileExists(path string) (bool) {
+    fileInfo, err := os.Stat(path)
     if err != nil {
-        return false, err
+        // no such file or dir
+        return false
     }
-    _, err = file.Stat()
-    if err != nil {
-        return false, err
+    if fileInfo.IsDir() {
+        // it's a directory
+        return false
     }
-    err = file.Close()
-    if err != nil {
-        return false, err
-    }
-    return true, nil
+    // it's a file
+    return true
 }
 
-func IsDir(path string) (bool, error) {
-    return DirExists(path)
-}
-
-func DirExists(path string) (bool, error) {
-    file, err := os.Open(path) // For read access.
+func DirExists(path string) (bool) {
+    fileInfo, err := os.Stat(path)
     if err != nil {
-        return false, err
+        // no such file or dir
+        return false
     }
-    stat, err := file.Stat()
-    if err != nil {
-        return false, err
+    if fileInfo.IsDir() {
+        // it's a directory
+        return true
     }
-    err = file.Close()
-    if err != nil {
-        return false, err
-    }
-    return stat.IsDir(), nil
+    // it's a file
+    return false
 }
 
 func Subfolders(path string) (paths []string) {
@@ -66,7 +58,7 @@ func Subfolders(path string) (paths []string) {
 func FilterExistPaths(paths []string) []string {
     var result []string
     for _, path := range paths {
-        if exists, _ := FileExists(path); exists {
+        if FileExists(path) {
             result = append(result, path)
         } else {
             log.Printf("Invalid path: '%v'", path)
