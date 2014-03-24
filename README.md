@@ -45,13 +45,13 @@ Detect directory, reload current page when file changed.
 
 # Install libsass
 
-Linux :
+Check `g++` that has installed (ubuntu: `sudo apt-get install g++`)
+
+Install libsass
 
     cd gosass/libsass
     make
     sudo make install
-
-Mac OS :
 
 
 

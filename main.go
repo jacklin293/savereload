@@ -184,10 +184,9 @@ func (args *Args) watch(paths []string) {
 
 func (args *Args) ExecWatchFlow() {
     // Check path
-    if DirExists(args.Path) {
-        fmt.Println("Path type : Dir")
-    } else {
-        fmt.Println("Path type : File")
+    if ! DirExists(args.Path) {
+        fmt.Printf("%s doesn't exist.\n", args.Path)
+        os.Exit(0)
     }
 
     // Clean Path
