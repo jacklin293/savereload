@@ -8,11 +8,11 @@
     <table>
         <tr>
             <td class="td1">
-                <img id="loading" class="hide" src="img/loading.gif"/>
-                <input type="checkbox" value="1" id="switch"/>
+                <label for="switch">啟動 Save Reload</label>
             </td>
             <td>
-                <label for="switch">啟動 Save Reload</label>
+                <input type="checkbox" value="1" id="switch"/>
+                <img id="loading" class="hide" src="img/loading.gif" alt="loading"/>
                 <input type="button" id="close" class="hide" value="結束"/>
             </td>
         </tr>
@@ -24,15 +24,24 @@
             <td><span id="connSwitchStatus"></span></td>
         </tr>
         <tr>
-            <td class="td1">網址 :</td>
-            <td><input type="text" id="url"></td>
+            <td class="td1">Host :</td>
+            <td><input type="text" id="url" class="width-300" placeholder="127.0.0.1"/></td>
         </tr>
         <tr>
-            <td class="td1"></td>
-            <td>
-                127.0.0.1</br>
-                example.com
-            </td>
+            <td class="td1">Port :</td>
+            <td><input type="text" id="port" value="9112"></td>
+        </tr>
+        <tr>
+            <td class="td1">Compile Sass :</td>
+            <td><input type="checkbox" id="compileSass"/></td>
+        </tr>
+        <tr id="sassOption1">
+            <td class="td1">Sass source :</td>
+            <td><input type="text" id="sassSrc" class="width-300" value="/tmp/qq/sass-src"/></td>
+        </tr>
+        <tr id="sassOption2">
+            <td class="td1">Sass destination :</td>
+            <td><input type="text" id="sassDes" class="width-300" value="/tmp/qq/sass-des"/></td>
         </tr>
     </table>
 </body>

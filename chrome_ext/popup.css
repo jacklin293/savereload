@@ -1,5 +1,5 @@
 body {
-    width: 330px;
+    width: 500px;
 }
 
 .success {
@@ -16,8 +16,8 @@ table {
 }
 
 /* Html event element */
-#url {
-    width: 220px;
+.width-300 {
+    width: 300px;
 }
 
 #switch {
@@ -41,4 +41,8 @@ table {
     height: 20px;
     text-align: right;
     width: auto;
+}
+
+#sassOption1, #sassOption2 {
+    display: none;
 }

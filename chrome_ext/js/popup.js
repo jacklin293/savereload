@@ -5,6 +5,7 @@ function showConnStatus(wsIsEstablished, connSwitchStatus) {
     // If websocket connection is established, disabled url.
     if (wsIsEstablished) {
         document.getElementById("url").disabled = true;
+        document.getElementById("port").disabled = true;
 
         // websocket connection status
         document.getElementById("wsIsEstablished").innerHTML = "connect";
@@ -20,6 +21,7 @@ function showConnStatus(wsIsEstablished, connSwitchStatus) {
         }
     } else {
         document.getElementById("url").disabled = false;
+        document.getElementById("port").disabled = false;
 
         // websocket connection status
         document.getElementById("wsIsEstablished").innerHTML = "disconnect";
@@ -34,12 +36,24 @@ function showConnStatus(wsIsEstablished, connSwitchStatus) {
 function doConnect(e) {
     document.getElementById('loading').className = "";
 
+    // Compile sass
+    compileSass = document.getElementById('compileSass').checked;
+    var sassSrc = (compileSass) ? document.getElementById('sassSrc').value : "";
+    var sassDes = (compileSass) ? document.getElementById('sassDes').value : "";
     var switchStatus = document.getElementById('switch').checked;
+    var port = document.getElementById('port').value;
     var url = document.getElementById('url').value;
     url = extractUrl(url);
 
     // Do websocket connect
-    chrome.runtime.sendMessage({"wsAction": "doConnect","wsConn": switchStatus, "url": url});
+    chrome.runtime.sendMessage({
+            "wsAction" : "doConnect",
+            "wsConn"   : switchStatus,
+            "url"      : url,
+            "port"     : port,
+            "sassSrc"  : sassSrc,
+            "sassDes"  : sassDes
+    });
 
     // Check websocket connection whether establish or not.
     if (switchStatus) {
@@ -69,11 +83,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // checkbox event
     document.getElementById('switch').addEventListener('click', doConnect);
     document.getElementById('close').addEventListener('click', doClose);
+    document.getElementById('compileSass').addEventListener('click', doCompileSass);
 })
 
 function getConnStatus() {
     chrome.runtime.sendMessage({wsAction: "getConnStatus"}, function(response) {
         document.getElementById('url').value = response.url;
+        document.getElementById('port').value = response.port;
         showConnStatus(response.wsIsEstablished, response.connSwitchStatus);
         wsIsEstablished = response.wsIsEstablished;
 
@@ -94,4 +110,16 @@ function extractUrl(url) {
          return url.substr(7);
     }
     return url;
+}
+
+function doCompileSass() {
+    var elem1 = document.getElementById('sassOption1');
+    var elem2 = document.getElementById('sassOption2');
+    if (document.getElementById('compileSass').checked) {
+        elem1.style.display = "table-row";
+        elem2.style.display = "table-row";
+    } else {
+        elem1.style.display = "none";
+        elem2.style.display = "none";
+    }
 }

@@ -4,10 +4,11 @@ console.log("=== background starting ===");
 var ws,
     wsIsEstablished = false,
     connSwitchStatus = false,
-    url = "";
+    url = "",
+    port = "";
 
 function wsConnect() {
-    ws = new WebSocket("ws://" + url + ":9112/connws/");
+    ws = new WebSocket("ws://" + url + ":" + port + "/connws/");
 
     ws.onopen = function() {
       console.log("[onopen] connect ws uri.");
@@ -79,12 +80,13 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.wsAction == "getConnStatus") {
        changeBrowserActionIcon();
-       sendResponse({"wsIsEstablished": wsIsEstablished, "connSwitchStatus": connSwitchStatus, "url": url});
+       sendResponse({"wsIsEstablished": wsIsEstablished, "connSwitchStatus": connSwitchStatus, "url": url, "port": port});
     }
 
     if (request.wsAction == "doConnect") {
         if (request.wsConn) {
             url = request.url;
+            port = request.port;
             wsConnect();
         } else {
             wsDisconnect();
