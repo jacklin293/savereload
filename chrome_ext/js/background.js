@@ -32,10 +32,13 @@ function wsConnect() {
             connSwitchStatus = false;
         }
         if (connSwitchStatus && res["Action"] == "doReload") {
-           pageReload();
+            pageReload();
         }
         if (wsIsEstablished && res["Action"] == "requireClose") {
             wsIsEstablished = false;
+        }
+        if (wsIsEstablished && res["Action"] == "updateSassChecked") {
+            console.log("upda sass checked");
         }
     }
 
@@ -72,6 +75,14 @@ function wsDisconnect() {
     connSwitchStatus = false;
 }
 
+function updateSassChecked() {
+    var data = {
+        "Action"        : "updateSassChecked",
+        "sassChecked"   : sassChecked
+    };
+    ws.send(JSON.stringify(data));
+}
+
 function pageReload() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         lastTabID = tabs[0].id;
@@ -96,14 +107,23 @@ chrome.runtime.onMessage.addListener(
 
     if (request.wsAction == "doConnect") {
         if (request.wsConn) {
-            sassChecked = request.sassChecked;
-            sassSrc     = request.sassSrc;
-            sassDes     = request.sassDes;
             url         = request.url;
             port        = request.port;
             wsConnect();
         } else {
             wsDisconnect();
+        }
+    }
+
+    if (request.wsAction == "updateSassChecked") {
+        if (wsIsEstablished) {
+            sassChecked = request.sassChecked;
+            sassSrc     = request.sassSrc;
+            sassDes     = request.sassDes;
+            updateSassChecked();
+            console.log("Sass checked : " + request.sassChecked);
+        } else {
+            console.log("Websocket isn't established.");
         }
     }
 
@@ -113,8 +133,10 @@ chrome.runtime.onMessage.addListener(
                 "Action" : "requireClose"
             };
             ws.send(JSON.stringify(data));
+            console.log("Do Close done.");
+        } else {
+            console.log("Websocket isn't established.");
         }
-        sendResponse({"log" : wsIsEstablished});
     }
 });
 

@@ -43,6 +43,11 @@ table {
     width: auto;
 }
 
-#sassOption1, #sassOption2 {
+/* sass */
+#sassCheckedContainer {
+    display: none;
+}
+
+.sassOptions {
     display: none;
 }

@@ -6,6 +6,7 @@ var defaultPort = "9112";
 function showConnStatus(wsIsEstablished, connSwitchStatus) {
     // If websocket connection is established, disabled url.
     if (wsIsEstablished) {
+        // url & port
         document.getElementById("url").disabled = true;
         document.getElementById("port").disabled = true;
 
@@ -22,6 +23,7 @@ function showConnStatus(wsIsEstablished, connSwitchStatus) {
             document.getElementById("connSwitchStatus").className = "fail";
         }
     } else {
+        // url & port
         document.getElementById("url").disabled = false;
         document.getElementById("port").disabled = false;
 
@@ -38,10 +40,6 @@ function showConnStatus(wsIsEstablished, connSwitchStatus) {
 function doConnect(e) {
     document.getElementById('loading').className = "";
 
-    // Compile sass
-    var sassChecked = document.getElementById('sassChecked').checked;
-    var sassSrc = document.getElementById('sassSrc').value;
-    var sassDes = document.getElementById('sassDes').value;
     var switchStatus = document.getElementById('switch').checked;
     var port = document.getElementById('port').value;
     var url = document.getElementById('url').value;
@@ -52,18 +50,16 @@ function doConnect(e) {
             "wsAction"    : "doConnect",
             "wsConn"      : switchStatus,
             "url"         : url,
-            "port"        : port,
-            "sassChecked" : sassChecked,
-            "sassSrc"     : sassSrc,
-            "sassDes"     : sassDes
+            "port"        : port
     });
 
     // Check websocket connection whether establish or not.
     if (switchStatus) {
-        setTimeout(function() {
+        var timer = setTimeout(function() {
+            console.log(1);
             getConnStatus();
             document.getElementById('loading').className = "hide";
-        }, 1500);
+        }, 1000);
     } else {
         getConnStatus();
         document.getElementById('loading').className = "hide";
@@ -95,7 +91,6 @@ function getConnStatus() {
         document.getElementById('sassChecked').checked = response.sassChecked;
         document.getElementById('sassSrc').value = response.sassSrc;
         document.getElementById('sassDes').value = response.sassDes;
-        updateSassChecked();
 
         // url & port
         document.getElementById('url').value = (response.url == "") ? defaultHost : response.url;
@@ -104,6 +99,9 @@ function getConnStatus() {
         // websocket status
         showConnStatus(response.wsIsEstablished, response.connSwitchStatus);
         wsIsEstablished = response.wsIsEstablished;
+
+        // sass status
+        showSassStatus();
 
         // show close websocket button
         if (wsIsEstablished) {
@@ -124,14 +122,32 @@ function extractUrl(url) {
     return url;
 }
 
-function updateSassChecked() {
-    var elem1 = document.getElementById('sassOption1');
-    var elem2 = document.getElementById('sassOption2');
-    if (document.getElementById('sassChecked').checked) {
-        elem1.style.display = "table-row";
-        elem2.style.display = "table-row";
+function showSassStatus() {
+    // Show sass options
+    var sassOptions = document.getElementsByClassName("sassOptions");
+    count = sassOptions.length;
+    if (wsIsEstablished) {
+        document.getElementById("sassCheckedContainer").style.display = "table-row";
+        while (count--) {
+            sassOptions[count].style.display = "table-row";
+        }
     } else {
-        elem1.style.display = "none";
-        elem2.style.display = "none";
+        document.getElementById("sassCheckedContainer").style.display = "none";
+        while (count--) {
+            sassOptions[count].style.display = "none";
+        }
     }
+}
+
+function updateSassChecked() {
+    // Send sass status to background
+    var sassChecked = document.getElementById('sassChecked').checked;
+    var sassSrc = document.getElementById('sassSrc').value;
+    var sassDes = document.getElementById('sassDes').value;
+    chrome.runtime.sendMessage({
+        "wsAction"    : "updateSassChecked",
+        "sassChecked" : sassChecked,
+        "sassSrc"     : sassSrc,
+        "sassDes"     : sassDes
+    });
 }
