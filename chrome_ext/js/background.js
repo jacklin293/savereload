@@ -2,10 +2,13 @@ console.log("=== background starting ===");
 
 // Global variable
 var ws,
-    wsIsEstablished = false,
-    connSwitchStatus = false,
-    url = "",
-    port = "";
+    wsIsEstablished     = false,
+    connSwitchStatus    = false,
+    url                 = "",
+    port                = "",
+    sassChecked         = false;
+    sassSrc             = "",
+    sassDes             = ""
 
 function wsConnect() {
     ws = new WebSocket("ws://" + url + ":" + port + "/connws/");
@@ -79,14 +82,25 @@ function pageReload() {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.wsAction == "getConnStatus") {
-       changeBrowserActionIcon();
-       sendResponse({"wsIsEstablished": wsIsEstablished, "connSwitchStatus": connSwitchStatus, "url": url, "port": port});
+        changeBrowserActionIcon();
+        sendResponse({
+            "wsIsEstablished"   : wsIsEstablished,
+            "connSwitchStatus"  : connSwitchStatus,
+            "url"               : url,
+            "port"              : port,
+            "sassChecked"       : sassChecked,
+            "sassSrc"           : sassSrc,
+            "sassDes"           : sassDes
+        });
     }
 
     if (request.wsAction == "doConnect") {
         if (request.wsConn) {
-            url = request.url;
-            port = request.port;
+            sassChecked = request.sassChecked;
+            sassSrc     = request.sassSrc;
+            sassDes     = request.sassDes;
+            url         = request.url;
+            port        = request.port;
             wsConnect();
         } else {
             wsDisconnect();

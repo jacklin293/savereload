@@ -1,4 +1,6 @@
 var wsIsEstablished = false;
+var defaultHost = "127.0.0.1";
+var defaultPort = "9112";
 
 // Show connection status
 function showConnStatus(wsIsEstablished, connSwitchStatus) {
@@ -37,9 +39,9 @@ function doConnect(e) {
     document.getElementById('loading').className = "";
 
     // Compile sass
-    compileSass = document.getElementById('compileSass').checked;
-    var sassSrc = (compileSass) ? document.getElementById('sassSrc').value : "";
-    var sassDes = (compileSass) ? document.getElementById('sassDes').value : "";
+    var sassChecked = document.getElementById('sassChecked').checked;
+    var sassSrc = document.getElementById('sassSrc').value;
+    var sassDes = document.getElementById('sassDes').value;
     var switchStatus = document.getElementById('switch').checked;
     var port = document.getElementById('port').value;
     var url = document.getElementById('url').value;
@@ -47,12 +49,13 @@ function doConnect(e) {
 
     // Do websocket connect
     chrome.runtime.sendMessage({
-            "wsAction" : "doConnect",
-            "wsConn"   : switchStatus,
-            "url"      : url,
-            "port"     : port,
-            "sassSrc"  : sassSrc,
-            "sassDes"  : sassDes
+            "wsAction"    : "doConnect",
+            "wsConn"      : switchStatus,
+            "url"         : url,
+            "port"        : port,
+            "sassChecked" : sassChecked,
+            "sassSrc"     : sassSrc,
+            "sassDes"     : sassDes
     });
 
     // Check websocket connection whether establish or not.
@@ -83,13 +86,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // checkbox event
     document.getElementById('switch').addEventListener('click', doConnect);
     document.getElementById('close').addEventListener('click', doClose);
-    document.getElementById('compileSass').addEventListener('click', doCompileSass);
+    document.getElementById('sassChecked').addEventListener('click', updateSassChecked);
 })
 
 function getConnStatus() {
     chrome.runtime.sendMessage({wsAction: "getConnStatus"}, function(response) {
-        document.getElementById('url').value = response.url;
-        document.getElementById('port').value = response.port;
+        // sass status
+        document.getElementById('sassChecked').checked = response.sassChecked;
+        document.getElementById('sassSrc').value = response.sassSrc;
+        document.getElementById('sassDes').value = response.sassDes;
+        updateSassChecked();
+
+        // url & port
+        document.getElementById('url').value = (response.url == "") ? defaultHost : response.url;
+        document.getElementById('port').value = (response.port == "") ? defaultPort : response.port;
+
+        // websocket status
         showConnStatus(response.wsIsEstablished, response.connSwitchStatus);
         wsIsEstablished = response.wsIsEstablished;
 
@@ -112,10 +124,10 @@ function extractUrl(url) {
     return url;
 }
 
-function doCompileSass() {
+function updateSassChecked() {
     var elem1 = document.getElementById('sassOption1');
     var elem2 = document.getElementById('sassOption2');
-    if (document.getElementById('compileSass').checked) {
+    if (document.getElementById('sassChecked').checked) {
         elem1.style.display = "table-row";
         elem2.style.display = "table-row";
     } else {
