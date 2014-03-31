@@ -12,7 +12,7 @@
             </td>
             <td>
                 <input type="checkbox" value="1" id="switch"/>
-                <img id="loading" class="hide" src="img/loading.gif" alt="loading"/>
+                <img id="connectLoading" class="hide" src="img/loading.gif" alt="loading"/>
                 <input type="button" id="close" class="hide" value="結束"/>
             </td>
         </tr>
@@ -33,15 +33,24 @@
         </tr>
         <tr id="sassCheckedContainer">
             <td class="td1">Compile Sass :</td>
-            <td><input type="checkbox" id="sassChecked"/></td>
+            <td>
+                <input type="checkbox" id="sassChecked"/>
+                <img id="sassLoading" class="hide" src="img/loading.gif" alt="loading"/>
+            </td>
         </tr>
         <tr class="sassOptions">
             <td class="td1">Sass source :</td>
-            <td><input type="text" id="sassSrc" class="width-300"/></td>
+            <td>
+                <div><input type="text" id="sassSrc" class="width-300"/></div>
+                <div id="sassSrcError" class="hide">Path doesn't exist.</div>
+            </td>
         </tr>
         <tr class="sassOptions">
             <td class="td1">Sass destination :</td>
-            <td><input type="text" id="sassDes" class="width-300"/></td>
+            <td>
+                <div><input type="text" id="sassDes" class="width-300"/></div>
+                <div id="sassDesError" class="hide">Path doesn't exist.</div>
+            </td>
         </tr>
     </table>
 </body>
