@@ -1,6 +1,7 @@
 var wsIsEstablished = false;
 var defaultHost = "127.0.0.1";
 var defaultPort = "9112";
+var doConnectCount = 0;
 
 // Show connection status
 function showConnStatus(wsIsEstablished, connSwitchStatus) {
@@ -55,10 +56,15 @@ function doConnect(e) {
 
     // Check websocket connection whether establish or not.
     if (switchStatus) {
-        var timer = setTimeout(function() {
-            console.log(1);
+        var timer = setInterval(function() {
+            doConnectCount++;
+            console.log("timeout : " + doConnectCount);
             getConnStatus();
-            document.getElementById('loading').className = "hide";
+            if (wsIsEstablished || doConnectCount > 5) {
+                document.getElementById('loading').className = "hide";
+                clearInterval(timer);
+                doConnectCount = 0;
+            }
         }, 1000);
     } else {
         getConnStatus();
