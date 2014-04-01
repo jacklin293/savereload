@@ -3,7 +3,7 @@ console.log("=== background starting ===");
 // Global variable
 var ws,
     wsIsEstablished     = false,
-    connSwitchStatus    = false,
+    watchFolderStatus  = false,
     url                 = "",
     port                = "",
     sassChecked         = false;
@@ -19,19 +19,19 @@ function wsConnect() {
         "Action" : "requireConnect"
       };
       ws.send(JSON.stringify(data));
-      connSwitchStatus = true;
+      watchFolderStatus = true;
       wsIsEstablished = true;
     }
 
     ws.onmessage = function(e) {
         var res = JSON.parse(e.data);
         if (wsIsEstablished && res["Action"] == "requireConnect") {
-            connSwitchStatus = true;
+            watchFolderStatus = true;
         }
         if (wsIsEstablished && res["Action"] == "requireDisconnect") {
-            connSwitchStatus = false;
+            watchFolderStatus = false;
         }
-        if (connSwitchStatus && res["Action"] == "doReload") {
+        if (watchFolderStatus && res["Action"] == "doReload") {
             pageReload();
         }
         if (wsIsEstablished && res["Action"] == "requireClose") {
@@ -72,7 +72,7 @@ function wsDisconnect() {
         "Action" : "requireDisconnect"
     };
     ws.send(JSON.stringify(data));
-    connSwitchStatus = false;
+    watchFolderStatus = false;
 }
 
 function updateSassChecked() {
@@ -96,7 +96,7 @@ chrome.runtime.onMessage.addListener(
         changeBrowserActionIcon();
         sendResponse({
             "wsIsEstablished"   : wsIsEstablished,
-            "connSwitchStatus"  : connSwitchStatus,
+            "watchFolderStatus"  : watchFolderStatus,
             "url"               : url,
             "port"              : port,
             "sassChecked"       : sassChecked,

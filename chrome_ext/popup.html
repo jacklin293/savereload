@@ -9,13 +9,13 @@
         <tr>
             <td class="td1">連線至 Server :</td>
             <td>
-				<input type="checkbox" value="1" id="switch"/>
+                <input type="checkbox" value="1" id="connChecked"/>
                 <img id="connectLoading" class="hide" src="img/loading.gif" alt="loading"/>
-				<span id="wsIsEstablished"></span>
-				<input type="button" id="close" class="hide" value="結束"/>
-			</td>
-		</tr>
-		<tr>
+                <span id="wsIsEstablished"></span>
+                <input type="button" id="close" class="hide" value="結束"/>
+            </td>
+        </tr>
+        <tr>
             <td class="td1">Host :</td>
             <td><input type="text" id="url" class="width-300" placeholder="127.0.0.1"/></td>
         </tr>
@@ -25,14 +25,16 @@
         </tr>
         <tr>
             <td class="td1">監聽資料夾 :</td>
-            <td><span id="connSwitchStatus"></span></td>
+            <td>
+                <input type="checkbox" value="1" id="watchFolderChecked"/>
+                <img id="watchFolderLoading" class="hide" src="img/loading.gif" alt="loading"/>
+                <span id="watchFolderStatus"></span>
+                <span id="watchFolderError">Path doesn't exist.</span>
+            </td>
         </tr>
         <tr>
             <td class="td1">Sass source :</td>
-            <td>
-                <div><input type="text" class="width-300"/></div>
-                <div>Path doesn't exist.</div>
-            </td>
+            <td><input type="text" class="width-300"/></td>
         </tr>
         <tr id="sassCheckedContainer">
             <td class="td1">Compile Sass :</td>
