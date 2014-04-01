@@ -2,6 +2,8 @@
 
 Detect directory, reload current page when file changed.
 
+> Ignore all hidden file. (ex: .git, .swp etc....)
+
 # Install
 
     go get github.com/jex-lin/savereload
@@ -22,7 +24,7 @@ Detect directory, reload current page when file changed.
 * `-p` : Watching path. Use `-p /tmp/test` to set watching target.
 * `-P` : Listen port.
 * `-r` : Watch subfolder under path. Default is recursive. Use `-r=false` to disable recursive watching.
-* `-ig` : Ignore file extension changing. Default is `swp|swpx`.  Use `-ig swp|git|swpx|conf` to set ignorant list.
+* `-ig` : Ignore file extension changing. Example use `-ig="swp|git|swpx|conf"` to set ignorant list.
 
 # Notice !!
 
