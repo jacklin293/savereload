@@ -19,18 +19,11 @@ function wsConnect() {
         "Action" : "requireConnect"
       };
       ws.send(JSON.stringify(data));
-      watchFolderStatus = true;
       wsIsEstablished = true;
     }
 
     ws.onmessage = function(e) {
         var res = JSON.parse(e.data);
-        if (wsIsEstablished && res["Action"] == "requireConnect") {
-            watchFolderStatus = true;
-        }
-        if (wsIsEstablished && res["Action"] == "requireDisconnect") {
-            watchFolderStatus = false;
-        }
         if (watchFolderStatus && res["Action"] == "doReload") {
             pageReload();
         }
@@ -67,14 +60,6 @@ function wsConnect() {
     }*/
 }
 
-function wsDisconnect() {
-    var data = {
-        "Action" : "requireDisconnect"
-    };
-    ws.send(JSON.stringify(data));
-    watchFolderStatus = false;
-}
-
 function updateSassChecked() {
     var data = {
         "Action"        : "updateSassChecked",
@@ -96,7 +81,7 @@ chrome.runtime.onMessage.addListener(
         changeBrowserActionIcon();
         sendResponse({
             "wsIsEstablished"   : wsIsEstablished,
-            "watchFolderStatus"  : watchFolderStatus,
+            "watchFolderStatus" : watchFolderStatus,
             "url"               : url,
             "port"              : port,
             "sassChecked"       : sassChecked,
@@ -105,14 +90,28 @@ chrome.runtime.onMessage.addListener(
         });
     }
 
-    if (request.wsAction == "doConnect") {
-        if (request.wsConn) {
+    if (request.wsAction == "connChecked") {
+        if (request.connChecked) {
             url         = request.url;
             port        = request.port;
             wsConnect();
+            console.log("Do Close done.");
         } else {
-            wsDisconnect();
+            if (wsIsEstablished) {
+                var data = {
+                    "Action" : "requireClose"
+                };
+                ws.send(JSON.stringify(data));
+                console.log("Do Close done.");
+            } else {
+                console.log("Websocket isn't established.");    
+            }
+
         }
+    }
+
+    if (request.wsAction == "updateWatchFolderChecked") {
+        watchFolderStatus = request.watchFolderChecked;
     }
 
     if (request.wsAction == "updateSassChecked") {
@@ -126,18 +125,6 @@ chrome.runtime.onMessage.addListener(
             console.log("Websocket isn't established.");
         }
     }
-
-    if (request.wsAction == "doClose") {
-        if (wsIsEstablished) {
-            var data = {
-                "Action" : "requireClose"
-            };
-            ws.send(JSON.stringify(data));
-            console.log("Do Close done.");
-        } else {
-            console.log("Websocket isn't established.");
-        }
-    }
 });
 
 // Change browser action icon
@@ -145,10 +132,10 @@ function changeBrowserActionIcon() {
     if (wsIsEstablished) {
         chrome.browserAction.setIcon({
               path : "img/browser_action_icon_enabled_19.png"
-          });
+        });
     } else {
         chrome.browserAction.setIcon({
               path : "img/browser_action_icon_disabled_19.png"
-          });
+        });
     }
 }

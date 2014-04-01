@@ -12,112 +12,31 @@ var doSassCount= 0,
     sassDesError = "";
 
 // Backgound check status count
-var doConnectCount = 0,
-    doWatchFolderCount = 0;
+var doConnectCount = 0;
 
-// Show connection status
-function showConnStatus() {
-    // If websocket connection is established, disabled url.
-    if (wsIsEstablished) {
-        // url & port
-        document.getElementById("url").disabled = true;
-        document.getElementById("port").disabled = true;
+document.addEventListener('DOMContentLoaded', function () {
+    // init get connection status
+    getConnStatus();
 
-        // websocket connection status
-        document.getElementById("wsIsEstablished").innerHTML = "connect";
-        document.getElementById("wsIsEstablished").className = "success";
+    // checkbox event
+    document.getElementById('connChecked').addEventListener('click', connChecked);
+    document.getElementById('watchFolderChecked').addEventListener('click', updateWatchFolderChecked);
+    document.getElementById('sassChecked').addEventListener('click', updateSassChecked);
+})
 
-        // Reload switch status
-        if (watchFolderStatus) {
-            document.getElementById("watchFolderStatus").innerHTML = "enabled";
-            document.getElementById("watchFolderStatus").className = "success";
-        } else {
-            document.getElementById("watchFolderStatus").innerHTML = "disabled";
-            document.getElementById("watchFolderStatus").className = "fail";
-        }
-    } else {
-        // url & port
-        document.getElementById("url").disabled = false;
-        document.getElementById("port").disabled = false;
-
-        // websocket connection status
-        document.getElementById("wsIsEstablished").innerHTML = "disconnect";
-        document.getElementById("wsIsEstablished").className = "fail";
-
-        // Reload switch status
-        document.getElementById("watchFolderStatus").innerHTML = "disabled";
-        document.getElementById("watchFolderStatus").className = "fail";
-    }
-}
-
-function getConnStatus() {
-    chrome.runtime.sendMessage({wsAction: "getConnStatus"}, function(response) {
-        // sass status
-        document.getElementById('sassChecked').checked = response.sassChecked;
-        document.getElementById('sassSrc').value = response.sassSrc;
-        document.getElementById('sassDes').value = response.sassDes;
-
-        // url & port
-        document.getElementById('url').value = (response.url == "") ? defaultHost : response.url;
-        document.getElementById('port').value = (response.port == "") ? defaultPort : response.port;
-
-        // websocket status
-        wsIsEstablished = response.wsIsEstablished;
-        watchFolderStatus = response.watchFolderStatus;
-        showConnStatus();
-
-        // sass status
-        showSassOptions();
-
-        // show close websocket button
-        if (wsIsEstablished) {
-            document.getElementById('close').className = "";
-        } else {
-            document.getElementById('close').className = "hide";
-        }
-    });
-    return wsIsEstablished;
-}
-
-function doWatchFolder(e) {
-    document.getElementById('watchFolderLoading').className = "";
-    var watchFolderChecked = document.getElementById('watchFolderChecked').checked;
-
-    chrome.runtime.sendMessage({
-        "wsAction"      : "watchFolder",
-        "watchFolder"   : watchFolderChecked
-    });
-    if (watchFolderChecked) {
-        var timer = setInterval(function() {
-            doWatchFolderCount++;
-            console.log("Count : " + doWatchFolderCount);
-            getConnStatus();
-            document.getElementById("watchFolderChecked").checked = true;
-            if (watchFolderStatus || doWatchFolderCount > 5) {
-                document.getElementById('connectLoading').className = "hide";
-                document.getElementById("watchFolderChecked").checked = false;
-                clearInterval(timer);
-                doWatchFolder = 0;
-            }
-        }, 1000);
-    } else {
-        getConnStatus();
-        document.getElementById('connectLoading').className = "hide";
-        document.getElementById("watchFolderChecked").checked = false;
-    }
-}
-
-function doConnect(e) {
+function connChecked(e) {
+    document.getElementById('connChecked').className = "hide";
     document.getElementById('connectLoading').className = "";
     var connChecked = document.getElementById('connChecked').checked;
 
     var port = document.getElementById('port').value;
     var url = document.getElementById('url').value;
-    url = extractUrl(url);
+    url = _extractUrl(url);
 
     // Do websocket connect
     chrome.runtime.sendMessage({
-            "wsAction"    : "doConnect",
+            "wsAction"    : "connChecked",
+            "connChecked" : connChecked,
             "url"         : url,
             "port"        : port
     });
@@ -129,44 +48,32 @@ function doConnect(e) {
             console.log("Count : " + doConnectCount);
             getConnStatus();
             if (wsIsEstablished || doConnectCount > 5) {
+                document.getElementById('connChecked').className = "";
                 document.getElementById('connectLoading').className = "hide";
-                document.getElementById("connChecked").checked = false;
                 clearInterval(timer);
                 doConnectCount = 0;
+                // If connect successfully, watch folder by default.
+                document.getElementById("watchFolderChecked").checked = true;
+                updateWatchFolderChecked();
             }
         }, 1000);
     } else {
-        getConnStatus();
-        document.getElementById('connectLoading').className = "hide";
-        document.getElementById("connChecked").checked = false;
+        setTimeout(function () {
+            getConnStatus();
+            document.getElementById('connectLoading').className = "hide";
+            document.getElementById("connChecked").checked = false;
+            document.getElementById('connChecked').className = "";
+        }, 1000);
     }
 }
 
-function doClose(e) {
-    chrome.runtime.sendMessage({wsAction: "doClose"}, function(response) {
-            console.log(response.log);
+function updateWatchFolderChecked(e) {
+    var watchFolderChecked = document.getElementById('watchFolderChecked').checked;
+    chrome.runtime.sendMessage({
+        "wsAction"              : "updateWatchFolderChecked",
+        "watchFolderChecked"    : watchFolderChecked
     });
-    setTimeout(function () {
-        getConnStatus();
-    }, 1000);
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    // init get connection status
     getConnStatus();
-
-    // checkbox event
-    document.getElementById('connChecked').addEventListener('click', doConnect);
-    document.getElementById('watchFolderChecked').addEventListener('click', doWatchFolder);
-    document.getElementById('close').addEventListener('click', doClose);
-    document.getElementById('sassChecked').addEventListener('click', updateSassChecked);
-})
-
-function extractUrl(url) {
-    if (url.indexOf("http://") == 0) {
-         return url.substr(7);
-    }
-    return url;
 }
 
 function showSassOptions() {
@@ -183,23 +90,6 @@ function showSassOptions() {
         while (count--) {
             sassOptions[count].style.display = "none";
         }
-    }
-}
-
-function getSassStatus() {
-    sassServerReply= true;
-    sassChecked = false;
-    sassSrcError = true;
-    sassDesError = true;
-
-
-    document.getElementById('sassChecked').checked = sassChecked;
-
-    if (sassSrcError) {
-        document.getElementById('sassSrcError').className = "";
-    }
-    if (sassDesError) {
-        document.getElementById('sassDesError').className = "";
     }
 }
 
@@ -226,13 +116,107 @@ function updateSassChecked() {
             document.getElementById('switch').checked = true;
             if (sassServerReply || doSassCount > 5) {
                 document.getElementById('sassLoading').className = "hide";
+                document.getElementById('switch').checked = sassServerReply
                 clearInterval(timer);
                 doSassCount = 0;
-                document.getElementById('switch').checked = false;
             }
         }, 1000);
     } else {
         getSassStatus();
         document.getElementById('sassLoading').className = "hide";
     }
+}
+
+function showWatchFolderStatus(isEnabled) {
+    document.getElementById('watchFolderChecked').checked = isEnabled;
+    // Reload switch status
+    if (isEnabled) {
+        document.getElementById("watchFolderStatus").innerHTML = "enabled";
+        document.getElementById("watchFolderStatus").className = "success";
+    } else {
+        document.getElementById("watchFolderStatus").innerHTML = "disabled";
+        document.getElementById("watchFolderStatus").className = "fail";
+    }
+}
+
+// Show connection status
+function showConnStatus() {
+    document.getElementById("connChecked").checked = wsIsEstablished;
+
+    // If websocket connection is established, disabled url.
+    if (wsIsEstablished) {
+        // url & port
+        document.getElementById("url").disabled = true;
+        document.getElementById("port").disabled = true;
+
+        // websocket connection status
+        document.getElementById("wsIsEstablished").innerHTML = "connect";
+        document.getElementById("wsIsEstablished").className = "success";
+
+        // watch folder
+        document.getElementById("watchFolderCheckedContainer").className = "";
+    } else {
+        // url & port
+        document.getElementById("url").disabled = false;
+        document.getElementById("port").disabled = false;
+
+        // websocket connection status
+        document.getElementById("wsIsEstablished").innerHTML = "disconnect";
+        document.getElementById("wsIsEstablished").className = "fail";
+
+        // Reload switch status
+        document.getElementById("watchFolderStatus").innerHTML = "disabled";
+        document.getElementById("watchFolderStatus").className = "fail";
+
+        // watch folder
+        document.getElementById("watchFolderCheckedContainer").className = "hide";
+    }
+}
+
+function getConnStatus() {
+    chrome.runtime.sendMessage({wsAction: "getConnStatus"}, function(response) {
+        // sass status
+        document.getElementById('sassChecked').checked = response.sassChecked;
+        document.getElementById('sassSrc').value = response.sassSrc;
+        document.getElementById('sassDes').value = response.sassDes;
+
+        // url & port
+        document.getElementById('url').value = (response.url == "") ? defaultHost : response.url;
+        document.getElementById('port').value = (response.port == "") ? defaultPort : response.port;
+
+        // websocket status
+        wsIsEstablished = response.wsIsEstablished;
+        showConnStatus();
+
+        // watch folder status
+        watchFolderStatus = response.watchFolderStatus;
+        showWatchFolderStatus(watchFolderStatus);
+
+        // sass status
+        showSassOptions();
+    });
+}
+
+
+function getSassStatus() {
+    sassServerReply= true;
+    sassChecked = false;
+    sassSrcError = true;
+    sassDesError = true;
+
+    document.getElementById('sassChecked').checked = sassChecked;
+
+    if (sassSrcError) {
+        document.getElementById('sassSrcError').className = "";
+    }
+    if (sassDesError) {
+        document.getElementById('sassDesError').className = "";
+    }
+}
+
+function _extractUrl(url) {
+    if (url.indexOf("http://") == 0) {
+         return url.substr(7);
+    }
+    return url;
 }
