@@ -7,12 +7,11 @@
 <body>
     <table>
         <tr>
-            <td class="td1">連線至 Server :</td>
+            <td class="td1"><label for="connChecked">連線至 Server :</label></td>
             <td>
                 <input type="checkbox" value="1" id="connChecked"/>
                 <img id="connectLoading" class="hide" src="img/loading.gif" alt="loading"/>
                 <span id="wsIsEstablished"></span>
-                <input type="button" id="close" class="hide" value="結束"/>
             </td>
         </tr>
         <tr>
@@ -23,18 +22,12 @@
             <td class="td1">Port :</td>
             <td><input type="text" id="port"></td>
         </tr>
-        <tr>
-            <td class="td1">監聽資料夾 :</td>
+        <tr id="watchFolderCheckedContainer" class="hide">
+            <td class="td1"><label for="watchFolderChecked">監聽資料夾 :</label></td>
             <td>
                 <input type="checkbox" value="1" id="watchFolderChecked"/>
-                <img id="watchFolderLoading" class="hide" src="img/loading.gif" alt="loading"/>
                 <span id="watchFolderStatus"></span>
-                <span id="watchFolderError">Path doesn't exist.</span>
             </td>
-        </tr>
-        <tr>
-            <td class="td1">Sass source :</td>
-            <td><input type="text" class="width-300"/></td>
         </tr>
         <tr id="sassCheckedContainer">
             <td class="td1">Compile Sass :</td>

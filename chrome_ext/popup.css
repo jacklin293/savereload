@@ -1,3 +1,4 @@
+/* Public style */
 body {
     width: 500px;
 }
@@ -15,24 +16,6 @@ table {
     padding: 0px;
 }
 
-/* Html event element */
-.width-300 {
-    width: 300px;
-}
-
-#switch {
-    text-align: right;
-    vertical-align: top;
-}
-
-#sassLoading, #connectLoading {
-    vertical-align: top;
-}
-
-#close {
-    float: right;
-}
-
 .hide {
     display: none;
 }
@@ -43,6 +26,20 @@ table {
     width: auto;
 }
 
+.width-300 {
+    width: 300px;
+}
+
+
+
+/* connect to server */
+#switch {
+    text-align: right;
+    vertical-align: top;
+}
+
+
+/* watch folder */
 
 /* sass */
 #sassCheckedContainer {
