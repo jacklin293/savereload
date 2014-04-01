@@ -25,7 +25,7 @@ table {
     vertical-align: top;
 }
 
-#loading {
+#sassLoading, #connectLoading {
     vertical-align: top;
 }
 
@@ -43,6 +43,7 @@ table {
     width: auto;
 }
 
+
 /* sass */
 #sassCheckedContainer {
     display: none;
@@ -50,4 +51,8 @@ table {
 
 .sassOptions {
     display: none;
+}
+
+#sassSrcError, #sassDesError {
+    color: red;
 }
