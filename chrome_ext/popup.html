@@ -7,29 +7,32 @@
 <body>
     <table>
         <tr>
-            <td class="td1">
-                <label for="switch">啟動 Save Reload</label>
-            </td>
+            <td class="td1">連線至 Server :</td>
             <td>
-                <input type="checkbox" value="1" id="switch"/>
+				<input type="checkbox" value="1" id="switch"/>
                 <img id="connectLoading" class="hide" src="img/loading.gif" alt="loading"/>
-                <input type="button" id="close" class="hide" value="結束"/>
-            </td>
-        </tr>
-        <tr>
-            <td class="td1">連線 :</td>
-            <td><span id="wsIsEstablished"></span></td>
-        <tr>
-            <td class="td1">監聽資料夾 :</td>
-            <td><span id="connSwitchStatus"></span></td>
-        </tr>
-        <tr>
+				<span id="wsIsEstablished"></span>
+				<input type="button" id="close" class="hide" value="結束"/>
+			</td>
+		</tr>
+		<tr>
             <td class="td1">Host :</td>
             <td><input type="text" id="url" class="width-300" placeholder="127.0.0.1"/></td>
         </tr>
         <tr>
             <td class="td1">Port :</td>
             <td><input type="text" id="port"></td>
+        </tr>
+        <tr>
+            <td class="td1">監聽資料夾 :</td>
+            <td><span id="connSwitchStatus"></span></td>
+        </tr>
+        <tr>
+            <td class="td1">Sass source :</td>
+            <td>
+                <div><input type="text" class="width-300"/></div>
+                <div>Path doesn't exist.</div>
+            </td>
         </tr>
         <tr id="sassCheckedContainer">
             <td class="td1">Compile Sass :</td>
