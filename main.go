@@ -23,6 +23,9 @@ type Args struct {
     Recurse   bool
     IgnoreExt string
     Ws        *websocket.Conn
+    SassChecked bool
+    SassSrc     string
+    SassDes     string
 }
 
 var (
@@ -33,7 +36,7 @@ func main() {
     args := Args{}
     flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
     flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx|swx", "Ignore file extension")
+    flag.StringVar(&args.IgnoreExt, "ig", "", "Ignore file extension. Ex: -ig=\"swp|swx|swo\"")
     flag.StringVar(&args.Port, "P", "9112", "Listen port");
     flag.Parse()
 
@@ -123,16 +126,22 @@ func (args *Args) watch(paths []string) {
                     continue
                 }
 
+                // Ignore all hidden file
+                if strings.HasPrefix(filepath.Base(ev.Name), ".") {
+                    log.Println("Ignore hidden file : " + ev.Name)
+                    continue
+                }
+
                 // Ignore some file extension
                 if len(args.IgnoreExt) > 0 && IsIgnoreExt(filepath.Ext(ev.Name), strings.Split(args.IgnoreExt, "|")) {
-                    fmt.Println("Ignore " + ev.Name)
+                    log.Println("Ignore " + ev.Name)
                     continue
                 }
 
                 // Compile sass file
                 if filepath.Ext(ev.Name) == ".scss" {
                     if err := CompileSass(ev.Name); err != nil {
-                        fmt.Println("Compile scss error in watching event.")
+                        log.Println("Compile scss error in watching event.")
                         continue
                     }
                 }
@@ -236,7 +245,26 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
             return
         }
         rec["ServerResponse"] = "Server received."
-        fmt.Println(rec)
+        log.Println(rec)
+
+        // Update sass checked
+        if rec["Action"] == "updateSassChecked" {
+            args.SassChecked    = rec["SassChecked"].(bool)
+            args.SassSrc        = rec["SassSrc"].(string)
+            args.SassDes        = rec["SassDes"].(string)
+
+            // Check dir that is existent.
+            if ! DirExists(args.SassSrc) {
+                rec["SassSrcError"] = "Path doesn't exist."
+            } else {
+                rec["SassSrcError"] = ""
+            }
+            if ! DirExists(args.SassDes) {
+                rec["SassDesError"] = "Path doesn't exist."
+            } else {
+                rec["SassDesError"] = ""
+            }
+        }
 
         if err = ws.WriteJSON(&rec); err != nil {
             fmt.Println("watch dir - Write : " + err.Error())
