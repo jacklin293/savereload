@@ -9,7 +9,6 @@ import (
     "log"
     "net/http"
     "os"
-    "os/exec"
     "path/filepath"
     "strings"
     "time"
@@ -18,9 +17,9 @@ import (
 )
 
 type Args struct {
+    Port      string
     Path      string
     IsDir     bool
-    Cmd       string
     Recurse   bool
     IgnoreExt string
     Ws        *websocket.Conn
@@ -29,6 +28,21 @@ type Args struct {
 var (
     DefaultPath, _ = filepath.Abs("./")
 )
+
+func main() {
+    args := Args{}
+    flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
+    flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
+    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx|swx", "Ignore file extension")
+    flag.StringVar(&args.Port, "P", "9112", "Listen port");
+    flag.Parse()
+
+    http.HandleFunc("/connws/", args.ConnWs)
+    err := http.ListenAndServe(":" + args.Port, nil)
+    if err != nil {
+        log.Fatal("ListenAndServe: ", err)
+    }
+}
 
 func CompileSass(sassFilePath string) error {
     // Get sass source file path
@@ -78,35 +92,6 @@ func CompileSass(sassFilePath string) error {
             return err
         }
         return err
-    }
-}
-
-func main() {
-    args := Args{}
-    flag.StringVar(&args.Path, "p", DefaultPath, "The file or folder path to watch")
-    flag.StringVar(&args.Cmd, "c", "", "The command to run when the folder changes")
-    flag.BoolVar(&args.Recurse, "r", true, "Controls whether the watcher should recurse into subdirectories")
-    flag.StringVar(&args.IgnoreExt, "ig", "swp|swpx|swx", "Ignore file extension")
-    flag.Parse()
-
-    http.HandleFunc("/connws/", args.ConnWs)
-    err := http.ListenAndServe(":9112", nil)
-    if err != nil {
-        log.Fatal("ListenAndServe: ", err)
-    }
-}
-
-func RunCommand(cmd string) {
-    splitCmd := strings.Split(cmd, " ")
-    if strings.TrimSpace(splitCmd[0]) == "" {
-        log.Fatal(errors.New(fmt.Sprintf("Command (%v) has too few args\n", cmd)))
-    }
-    cmdPtr := exec.Command(splitCmd[0], splitCmd[1:]...)
-    cmdPtr.Stdout = os.Stdout
-    cmdPtr.Stderr = os.Stderr
-    err := cmdPtr.Run()
-    if err != nil {
-        log.Fatal(err)
     }
 }
 
@@ -163,9 +148,6 @@ func (args *Args) watch(paths []string) {
 
                 fmt.Printf("Detect %s changing, notify browser reload : %v\n", ev.Name, msg)
 
-                if args.Cmd != "" {
-                    RunCommand(args.Cmd)
-                }
             case err := <-watcher.Error:
                 log.Fatal(err)
             }

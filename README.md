@@ -20,29 +20,13 @@ Detect directory, reload current page when file changed.
 # Option
 
 * `-p` : Watching path. Use `-p /tmp/test` to set watching target.
+* `-P` : Listen port.
 * `-r` : Watch subfolder under path. Default is recursive. Use `-r=false` to disable recursive watching.
 * `-ig` : Ignore file extension changing. Default is `swp|swpx`.  Use `-ig swp|git|swpx|conf` to set ignorant list.
 
 # Notice !!
 
 * Port is 9112, not support other port so far. I will add this option as soon as possible.
-
-# Todo list
-
-### Hot fix
-
-* Dynamic add folder, but not monitor.  If folder and not exist then add to monitor.
-* Change port
-* 將 compile sass 切為另一個 flag 的功能(應該也是 watch dir)
-
-### Miscellaneous
-
-* chrome extension  啟動 save reload 按鈕 分開為 連線及監聽按鈕要分開為兩個checkbox, 結束按鈕就不用了
-* UI input directory that i want watching
-* - extensions: .html .css .js .png .gif .jpg .php .php5 .py .rb .erb
-* - excluding changes in: */.git/* */.svn/* */.hg/*
-* Strip -c flag
-
 
 # Install libsass
 
@@ -54,6 +38,21 @@ Install libsass
     make
     sudo make install
 
+# Todo list
+
+### Hot fix
+
+* Server 回傳監聽的資料夾 path
+* 忽略隱藏檔(.*)
+* Dynamic add folder, but not monitor.  If folder and not exist then add to monitor.
+* Sass compile
+
+### Miscellaneous
+
+* chrome extension  啟動 save reload 按鈕 分開為 連線及監聽按鈕要分開為兩個checkbox, 結束按鈕就不用了
+* background.js 定時 update connection status => Can't do that?
+* - extensions: .html .css .js .png .gif .jpg .php .php5 .py .rb .erb
+* - excluding changes in: */.git/* */.svn/* */.hg/*
 
 
 
