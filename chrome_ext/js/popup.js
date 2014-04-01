@@ -47,7 +47,7 @@ function connChecked(e) {
             doConnectCount++;
             console.log("Count : " + doConnectCount);
             getConnStatus();
-            if (wsIsEstablished || doConnectCount > 5) {
+            if (wsIsEstablished || doConnectCount > 3) {
                 document.getElementById('connChecked').className = "";
                 document.getElementById('connectLoading').className = "hide";
                 clearInterval(timer);
@@ -76,23 +76,6 @@ function updateWatchFolderChecked(e) {
     getConnStatus();
 }
 
-function showSassOptions() {
-    // Show sass options
-    var sassOptions = document.getElementsByClassName("sassOptions");
-    count = sassOptions.length;
-    if (wsIsEstablished) {
-        document.getElementById("sassCheckedContainer").style.display = "table-row";
-        while (count--) {
-            sassOptions[count].style.display = "table-row";
-        }
-    } else {
-        document.getElementById("sassCheckedContainer").style.display = "none";
-        while (count--) {
-            sassOptions[count].style.display = "none";
-        }
-    }
-}
-
 function updateSassChecked() {
     document.getElementById('sassLoading').className = "";
 
@@ -108,23 +91,19 @@ function updateSassChecked() {
     });
 
     // Check websocket connection whether establish or not.
-    if (sassChecked) {
-        var timer = setInterval(function() {
-            doSassCount++;
-            console.log("Count : " + doSassCount);
-            getSassStatus();
-            document.getElementById('switch').checked = true;
-            if (sassServerReply || doSassCount > 5) {
-                document.getElementById('sassLoading').className = "hide";
-                document.getElementById('switch').checked = sassServerReply
-                clearInterval(timer);
-                doSassCount = 0;
-            }
-        }, 1000);
-    } else {
-        getSassStatus();
-        document.getElementById('sassLoading').className = "hide";
-    }
+    var timer = setInterval(function() {
+        doSassCount++;
+        console.log("Count : " + doSassCount);
+        getConnStatus();
+        document.getElementById('sassChecked').checked = true;
+        if (sassServerReply || doSassCount > 3) {
+            document.getElementById('sassLoading').className = "hide";
+            clearInterval(timer);
+            doSassCount = 0;
+            showSassStatus();
+        }
+    }, 1000);
+
 }
 
 function showWatchFolderStatus(isEnabled) {
@@ -175,11 +154,6 @@ function showConnStatus() {
 
 function getConnStatus() {
     chrome.runtime.sendMessage({wsAction: "getConnStatus"}, function(response) {
-        // sass status
-        document.getElementById('sassChecked').checked = response.sassChecked;
-        document.getElementById('sassSrc').value = response.sassSrc;
-        document.getElementById('sassDes').value = response.sassDes;
-
         // url & port
         document.getElementById('url').value = (response.url == "") ? defaultHost : response.url;
         document.getElementById('port').value = (response.port == "") ? defaultPort : response.port;
@@ -193,24 +167,44 @@ function getConnStatus() {
         showWatchFolderStatus(watchFolderStatus);
 
         // sass status
-        showSassOptions();
+        document.getElementById('sassChecked').checked = response.sassChecked;
+        document.getElementById('sassSrc').value = response.sassSrc;
+        document.getElementById('sassDes').value = response.sassDes;
+        sassServerReply = response.sassServerReply;
+        sassSrcError = response.sassSrcError;
+        sassDesError = response.sassDesError;
+        showSassStatus();
     });
 }
 
+function showSassStatus() {
+    // Show sass options
+    var sassOptions = document.getElementsByClassName("sassOptions");
+    count = sassOptions.length;
 
-function getSassStatus() {
-    sassServerReply= true;
-    sassChecked = false;
-    sassSrcError = true;
-    sassDesError = true;
-
-    document.getElementById('sassChecked').checked = sassChecked;
-
-    if (sassSrcError) {
-        document.getElementById('sassSrcError').className = "";
+    // Connect successfully.
+    if (wsIsEstablished) {
+        document.getElementById("sassCheckedContainer").style.display = "table-row";
+        while (count--) {
+            sassOptions[count].style.display = "table-row";
+        }
+    } else {
+        document.getElementById("sassCheckedContainer").style.display = "none";
+        while (count--) {
+            sassOptions[count].style.display = "none";
+        }
     }
-    if (sassDesError) {
+
+    // Check path that is existent.
+    if (sassSrcError != "") {
+        document.getElementById('sassSrcError').className = "";
+    } else {
+        document.getElementById('sassSrcError').className = "hide";
+    }
+    if (sassDesError != "") {
         document.getElementById('sassDesError').className = "";
+    } else {
+        document.getElementById('sassDesError').className = "hide";
     }
 }
 

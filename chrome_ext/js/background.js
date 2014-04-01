@@ -8,7 +8,10 @@ var ws,
     port                = "",
     sassChecked         = false;
     sassSrc             = "",
-    sassDes             = ""
+    sassDes             = "",
+    sassServerReply     = false,
+    sassSrcError        = "",
+    sassDesError        = ""
 
 function wsConnect() {
     ws = new WebSocket("ws://" + url + ":" + port + "/connws/");
@@ -31,7 +34,9 @@ function wsConnect() {
             wsIsEstablished = false;
         }
         if (wsIsEstablished && res["Action"] == "updateSassChecked") {
-            console.log("upda sass checked");
+            sassServerReply = true;
+            sassSrcError = (res["SassSrcError"] == "undefined") ? "" : res["SassSrcError"];
+            sassDesError = (res["SassDesError"] == "undefined") ? "" : res["SassDesError"];
         }
     }
 
@@ -63,7 +68,9 @@ function wsConnect() {
 function updateSassChecked() {
     var data = {
         "Action"        : "updateSassChecked",
-        "sassChecked"   : sassChecked
+        "SassChecked"   : sassChecked,
+        "SassSrc"       : sassSrc,
+        "SassDes"       : sassDes
     };
     ws.send(JSON.stringify(data));
 }
@@ -86,7 +93,10 @@ chrome.runtime.onMessage.addListener(
             "port"              : port,
             "sassChecked"       : sassChecked,
             "sassSrc"           : sassSrc,
-            "sassDes"           : sassDes
+            "sassDes"           : sassDes,
+            "sassServerReply"   : sassServerReply,
+            "sassSrcError"      : sassSrcError,
+            "sassDesError"      : sassDesError
         });
     }
 
