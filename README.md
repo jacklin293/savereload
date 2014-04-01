@@ -4,7 +4,8 @@ Detect directory, reload current page when file changed.
 
 # Install
 
-    go get github.com/jex-lin/web_develop_save_reload
+    go get github.com/jex-lin/savereload
+    go install github.com/jex-lin/savereload
 
 # How to use
 
