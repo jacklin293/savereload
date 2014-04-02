@@ -47,18 +47,27 @@ func main() {
     }
 }
 
-func CompileSass(sassFilePath string) error {
+func (args *Args) CompileSass(sassFilePath string) error {
     // Get sass source file path
     sassFullPath, err := filepath.Abs(sassFilePath)
     if err != nil {
         return err
     }
-    sassDirPath := filepath.Dir(sassFullPath)
 
     // Assemble css file full path
     re := regexp.MustCompile("scss|sass")
     cssFileName := re.ReplaceAllString(filepath.Base(sassFullPath), "css")
-    cssFullPath := sassDirPath + string(os.PathSeparator) + cssFileName
+    var cssDirPath string
+    if (args.SassSrc == args.SassDes) {
+        cssDirPath = filepath.Dir(sassFullPath)
+    } else {
+        // Create sass file destination path
+        cssDirPath = strings.Replace(filepath.Dir(sassFilePath), args.SassSrc, args.SassDes, 1)
+        if ! DirExists(cssDirPath) {
+            os.MkdirAll(cssDirPath, 0755)
+        }
+    }
+    cssFullPath := cssDirPath + string(os.PathSeparator) + cssFileName
 
     ctx := gosass.FileContext {
         Options: gosass.Options{
@@ -139,8 +148,8 @@ func (args *Args) watch(paths []string) {
                 }
 
                 // Compile sass file
-                if args.SassChecked && filepath.Ext(ev.Name) == ".scss" {
-                    if err := CompileSass(ev.Name); err != nil {
+                if args.SassChecked && filepath.Ext(ev.Name) == ".scss" && strings.HasPrefix(ev.Name, args.SassSrc) {
+                    if err := args.CompileSass(ev.Name); err != nil {
                         log.Println("Compile scss error in watching event.")
                         continue
                     }
