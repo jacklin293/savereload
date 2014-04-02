@@ -37,6 +37,7 @@ function wsConnect() {
             sassServerReply = true;
             sassSrcError = (res["SassSrcError"] == "undefined") ? "" : res["SassSrcError"];
             sassDesError = (res["SassDesError"] == "undefined") ? "" : res["SassDesError"];
+            sassChecked = res["SassChecked"];
         }
     }
 
