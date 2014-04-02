@@ -139,7 +139,7 @@ func (args *Args) watch(paths []string) {
                 }
 
                 // Compile sass file
-                if filepath.Ext(ev.Name) == ".scss" {
+                if args.SassChecked && filepath.Ext(ev.Name) == ".scss" {
                     if err := CompileSass(ev.Name); err != nil {
                         log.Println("Compile scss error in watching event.")
                         continue
@@ -263,6 +263,12 @@ func (args *Args) ConnWs(w http.ResponseWriter, r *http.Request) {
                 rec["SassDesError"] = "Path doesn't exist."
             } else {
                 rec["SassDesError"] = ""
+            }
+
+            //
+            if ! DirExists(args.SassSrc) || ! DirExists(args.SassDes) {
+                args.SassChecked = false
+                rec["SassChecked"] = false
             }
         }
 
