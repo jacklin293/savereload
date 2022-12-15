@@ -1,4 +1,6 @@
-# Introduction
+# DEPRECATED
+
+This is an experimental repo and no longer maintained.
 
 Detect directory, reload current page when file changed.
 
